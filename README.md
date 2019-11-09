@@ -4,7 +4,7 @@ One Sketch per day
 
 ## Sketches
 
-* (day01-contrast.html)[docs/day01-contrast.html]
+* [day01-contrast.html](docs/day01-contrast.html)
 
 ## Setup
 
