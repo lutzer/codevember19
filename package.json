@@ -4,6 +4,7 @@
   "description": "One Sketch per day",
   "main": "day01-contrast.js",
   "scripts": {
+    "day1": "canvas-sketch sketches/day01-contrast.js --open",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
