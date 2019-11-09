@@ -20,9 +20,8 @@ const createGrid = (size) => {
 
 const sketch = ({ context }) => {
 
-  context.canvas.style.background = "linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(30,30,30,1) 100%)"
-
-  console.log(context.canvas.style)
+  context.canvas.style.background = "linear-gradient(180deg, rgba(50,50,50,1) 0%, rgba(0,0,0,1) 100%)"
+  //context.canvas.style.background = "black"
 
   const colors = random.shuffle(random.pick(palettes));
   const frequency = 1.5;
@@ -37,12 +36,15 @@ const sketch = ({ context }) => {
           let v = y / (size - 1);
           let w = z / (size - 1);
 
+          let offset = Array(3).fill(1/size).map( (val) => val * Math.random() );
+
           const noise = random.noise3D(u * frequency, v * frequency, w * frequency);
 
           points.push({
             color: random.pick(colors),
-            scale: noise * 0.08,
-            position: [u, v, w]
+            scale: noise * 0.05,
+            position: [u + offset[0], v + offset[1], w + offset[2]],
+            rotation: [Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI]
           });
         }
       }
@@ -84,26 +86,27 @@ const sketch = ({ context }) => {
     return mesh
   }
 
+  // create boxes
   const points = createGrid(10);
-
   const meshes = new THREE.Group()
   points.forEach( (point) => {
     if (point.scale > 0) {
-      let box = createBox(point.position[0], point.position[1], point.position[2], /*point.color*/)
+      let box = createBox(point.position[0], point.position[1], point.position[2], point.color)
       box.scale.set(point.scale, point.scale, point.scale)
+      box.rotateX(point.rotation[0])
+      box.rotateY(point.rotation[1])
+      box.rotateZ(point.rotation[2])
       meshes.add(box)
     }
   })
-  let box = createBox(0,0,0)
-  // meshes.add(box)
-
-  console.log(meshes)
+  scene.add(meshes);
   
-  scene.add(new THREE.AmbientLight( 0x333333 ));
-  var light = new THREE.DirectionalLight( 0xffffff, 0.125 );
+  // setup light
+  // scene.add(new THREE.AmbientLight( 0x333333 ));
+  var light = new THREE.DirectionalLight( 0xffffff, 0.4 );
   light.position.set( 0, 0, -10 );
   scene.add(light)
-  scene.add(meshes);
+  
 
   // draw each frame
   return {
@@ -119,6 +122,12 @@ const sketch = ({ context }) => {
       renderer.render(scene, camera);
       meshes.rotateX(0.001)
       meshes.rotateY(0.002)
+
+      meshes.children.forEach( (mesh, index) => {
+        mesh.rotateX(0.02)
+        mesh.rotateY(0.02)
+        mesh.rotateZ(0.02)
+      })
     },
     // Dispose of events & renderer for cleaner hot-reloading
     unload() {
