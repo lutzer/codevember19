@@ -1,6 +1,6 @@
-# CODEVEMBER 2019
+# Codevember 2019
 
-One sketch per day in dark november
+One sketch per day in dark november. Sketches can be found here: [https://lutzer.github.io/codevember19/](https://lutzer.github.io/codevember19/)
 
 ## Setup
 
