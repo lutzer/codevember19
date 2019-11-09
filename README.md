@@ -19,5 +19,5 @@ One Sketch per day
 
 ## Export
 
-* ouput gif with `canvas-sketch {sketch_name.js}  --output=exports --stream=gif`
-* build inline html with `canvas-sketch {sketch_name.js}  --dir exports --build --inline`
+* ouput gif with `canvas-sketch {sketch_name.js}  --output=docs --stream=gif`
+* build inline html with `canvas-sketch {sketch_name.js}  --dir docs --build --inline`
