@@ -5,6 +5,13 @@ const canvasSketch = require("canvas-sketch");
 const palettes = require('nice-color-palettes');
 const random = require('canvas-sketch-util/random');
 
+require('three/examples/js/postprocessing/EffectComposer.js');
+require('three/examples/js/postprocessing/ShaderPass.js');
+require('three/examples/js/shaders/CopyShader.js');
+require('three/examples/js/postprocessing/RenderPass.js');
+require('three/examples/js/postprocessing/UnrealBloomPass.js');
+require('three/examples/js/shaders/LuminosityHighPassShader.js');
+
 const settings = {
   suffix: random.getSeed(),
   dimensions: [ 512, 512 ],
@@ -106,7 +113,18 @@ const sketch = ({ context }) => {
   var light = new THREE.DirectionalLight( 0xffffff, 0.4 );
   light.position.set( 0, 0, -10 );
   scene.add(light)
-  
+
+  // add bloom shader
+  var renderScene = new THREE.RenderPass( scene, camera );
+
+  var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+  bloomPass.threshold =  0.3;
+  bloomPass.strength = 1.0;
+  bloomPass.radius = 0;
+
+  composer = new THREE.EffectComposer( renderer );
+  composer.addPass( renderScene );
+  composer.addPass( bloomPass );
 
   // draw each frame
   return {
@@ -119,7 +137,7 @@ const sketch = ({ context }) => {
     },
     // Update & render your scene here
     render({ time }) {
-      renderer.render(scene, camera);
+      composer.render();
       meshes.rotateX(0.001)
       meshes.rotateY(0.002)
 
