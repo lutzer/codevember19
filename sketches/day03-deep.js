@@ -10,7 +10,7 @@ const settings = {
 };
 
 // Your glsl code
-const frag = glsl(`
+const frag = glsl( /*glsl*/ `
   precision highp float;
 
   uniform float time;
@@ -25,14 +25,13 @@ const frag = glsl(`
     vec3 bg = mix(bg_gradient_top, bg_gradient_bottom, 1.0-vUv.y);
 
     vec2 rot = vec2(cos(light_angle) * vUv.x - sin(light_angle) * vUv.y, 
-                        sin(light_angle) * vUv.x + cos(light_angle) * vUv.y);
+                    sin(light_angle) * vUv.x + cos(light_angle) * vUv.y);
 
     float pos = (vUv.x - vUv.y) * 0.5;
 
-    float light = noise(vec3(rot.x * 5.0, time * 0.2, 0.0));
-    float intensity = noise(vec3(rot.x * 5.0, time * 0.2, 1.0));
+    float light = noise(vec3(rot.x * 4.0, time * 0.2, 0.0));
 
-    light *= vUv.y * vUv.y * 0.3;
+    light *= rot.y * rot.y * rot.y * 0.2;
 
     vec3 color = mix(bg, vec3(1.0,1.0,1.0), light);
     gl_FragColor = vec4(color, 1.0);
@@ -54,15 +53,15 @@ const sketch = ({ gl }) => {
       // Expose props from canvas-sketch
       time: ({ time }) => time,
       bg_gradient_top: () => rgbToVec3(34, 82, 130),
-      bg_gradient_bottom: () => rgbToVec3(23, 55, 87),
-      light_angle: () => 30 / 360 * Math.PI
+      bg_gradient_bottom: () => rgbToVec3(18, 46, 74),
+      light_angle: ({angle}) =>  angle / 360 * Math.PI
     }
   });
 
   return {
     render ({context, width, height, time}) {
       // Render shader
-      shader.render({ time: time });
+      shader.render({ time: time, angle: 30 });
 
       // console.log(context)
 
