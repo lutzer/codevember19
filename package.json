@@ -6,6 +6,8 @@
   "scripts": {
     "day1": "canvas-sketch sketches/day01-contrast.js --open --hot",
     "day2": "canvas-sketch sketches/day02-geometric.js --open --hot",
+    "day3": "canvas-sketch sketches/day03-deep.js --open --hot",
+    "build": "canvas-sketch --dir docs --build --inline",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,6 +16,8 @@
   "dependencies": {
     "canvas-sketch": "^0.7.1",
     "canvas-sketch-util": "^1.10.0",
+    "glsl-noise": "0.0.0",
+    "glslify": "^7.0.0",
     "lodash": "^4.17.15",
     "nice-color-palettes": "^3.0.0",
     "three": "^0.110.0"

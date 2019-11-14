@@ -10,6 +10,7 @@ One sketch per day in dark november. Sketches can be found here: [https://lutzer
 ## Run
 
 * run `npm run day{n}`
+* build with `npm run build sketches/{sketch_name.js}`
 
 ## Develop 
 
