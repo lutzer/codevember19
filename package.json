@@ -16,6 +16,7 @@
   "dependencies": {
     "canvas-sketch": "^0.7.1",
     "canvas-sketch-util": "^1.10.0",
+    "glsl-hsl2rgb": "^1.1.0",
     "glsl-noise": "0.0.0",
     "glslify": "^7.0.0",
     "lodash": "^4.17.15",
