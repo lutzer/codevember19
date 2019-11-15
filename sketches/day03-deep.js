@@ -121,11 +121,11 @@ const sketch = ({ context, width, height }) => {
   const mesh = new THREE.Mesh(
     new THREE.SphereGeometry(0.15,32,32),
     new THREE.MeshPhysicalMaterial({
-      color: 0xff0000,
+      color: 0xffffff,
       transparent: true, 
-      opacity: 0.15,
+      opacity: 0.8,
       roughness: 0.5,
-      metalness: 0.4,
+      metalness: 0.8,
       wireframe: false
     })
   );
@@ -134,10 +134,14 @@ const sketch = ({ context, width, height }) => {
   scene.add(mesh)
 
   // setup light
-  scene.add(new THREE.AmbientLight( 0x333 ));
-  var light = new THREE.DirectionalLight( 0xffffff, 1.0 );
+  scene.add(new THREE.AmbientLight( 0x156abf ));
+  var light = new THREE.DirectionalLight( 0xffffff, 0.1 );
   light.position.set( 0.4, 1.0, 0.1 );
   scene.add(light)
+
+  var light2 = new THREE.DirectionalLight( 0xffffff, 0.1 );
+  light2.position.set( -0.4, -0.0, 0.4 );
+  scene.add(light2)
 
   // var morphShift = 0.5
   // context.canvas.addEventListener("mousemove", (e) => {
@@ -156,10 +160,8 @@ const sketch = ({ context, width, height }) => {
     },
     render ({time}) {
       morphCircle(mesh.geometry.vertices, meshNormals, mesh.geometry.parameters.radius, 0.4, time)
-      
-
-
       mesh.geometry.verticesNeedUpdate = true;
+      mesh.material.needsUpdate = true;
       // mesh.material.needsUpdate = true;
       setShaderUniforms(background.material, { time: time })
       //setShaderUniforms(particle.material, { time: time })
@@ -168,8 +170,12 @@ const sketch = ({ context, width, height }) => {
 
       let shiftX = random.noise2D(time / 10, 0.0) * 0.1;
       let shiftY = random.noise2D(time / 10, 1.0) * 0.1;
+      let shiftZ = random.noise2D(time / 10, 2.0) * 0.2;
       mesh.position.setX(shiftX);
       mesh.position.setY(shiftY)
+      mesh.position.setZ(shiftZ + 0.2)
+      mesh.rotateX(0.003)
+      mesh.rotateY(0.005)
 
     },
     unload () {
