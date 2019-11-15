@@ -21,10 +21,6 @@ const settings = {
   context: "webgl",
 };
 
-const createGrid = (size) => {
-
-}
-
 const sketch = ({ context }) => {
 
   context.canvas.style.background = "linear-gradient(180deg, rgba(50,50,50,1) 0%, rgba(0,0,0,1) 100%)"

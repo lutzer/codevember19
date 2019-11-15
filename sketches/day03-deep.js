@@ -10,6 +10,8 @@ require('three/examples/js/postprocessing/RenderPass.js');
 require('three/examples/js/postprocessing/UnrealBloomPass.js');
 require('three/examples/js/shaders/LuminosityHighPassShader.js');
 
+const PIXEL_BUFFER_SIZE = 6;
+
 // Setup our sketch
 const settings = {
   dimensions: [ 512, 512 ],
@@ -109,12 +111,14 @@ const fgShader = {
 const meshShader = {
   uniforms: {
     time: { value: 1.0},
-    radius: { value: 0.1 }
+    radius: { value: 0.1 },
+    brightness: { value : 1.0}
   },
   fragmentShader: glslify(/* glsl */`
     #pragma glslify: hsl2rgb = require('glsl-hsl2rgb');
     #pragma glslify: noise = require('glsl-noise/simplex/3d);
     uniform float time;
+    uniform float brightness;
     varying float n;
     varying vec2 vUv;
     void main () {
@@ -124,7 +128,7 @@ const meshShader = {
       float dot = noise(vec3(vUv.x * 120., vUv.y * 40., time * 1.));
 
       float v = (dot > 0.5) ? (dot - 0.5) + 0.3 : 0.4;
-      vec3 color = hsl2rgb(hue, 0.4, v);
+      vec3 color = hsl2rgb(hue, 0.4, v * brightness);
       gl_FragColor = vec4(color, 1.0);
     }
   `),
@@ -144,11 +148,25 @@ const meshShader = {
 }
 
 function rgbToVec3(r,g,b) { return [ r / 255, g / 255, b / 255 ] };
+
 function setShaderUniforms(material, uniforms) {
   Object.keys(uniforms).forEach( (key) => {
     material.uniforms[key].value = uniforms[key]
   });
 }
+
+function rgbToLumincance(r,g,b) {
+  return (0.299*r + 0.587*g + 0.114*b) / 255
+}
+
+function getBrightnessFromBuffer(pixelBuffer) {
+  let brightness = 0
+  for(let i=0; i < pixelBuffer.length - 3; i += 4) {
+    brightness += rgbToLumincance(pixelBuffer[i],pixelBuffer[i+1], pixelBuffer[i+2]);
+  }
+  return brightness / pixelBuffer.length * 4
+}
+
 
 // Your sketch, which simply returns the shader
 const sketch = ({ context, width, height }) => {
@@ -169,11 +187,19 @@ const sketch = ({ context, width, height }) => {
   // Setup your scene
   const scene = new THREE.Scene();
 
+  //light scene
+  const lightScene = new THREE.Scene();
+
   // add background plane
   const background = new THREE.Mesh(
     new THREE.PlaneGeometry(1,1),
     new THREE.ShaderMaterial(bgShader)
   );
+  const lightBackground = new THREE.Mesh(
+    new THREE.PlaneGeometry(1,1),
+    new THREE.ShaderMaterial(bgShader)
+  );
+  lightScene.add(lightBackground);
   scene.add(background);
 
   // add particles
@@ -186,10 +212,14 @@ const sketch = ({ context, width, height }) => {
 
   const renderScene = new THREE.RenderPass( scene, camera );
 
-  const composer = new THREE.EffectComposer( renderer );
+  var texture = new THREE.WebGLRenderTarget(width, height);
+  var pixelBuffer = new Uint8Array( 4 * PIXEL_BUFFER_SIZE * PIXEL_BUFFER_SIZE );
+
+  const composer = new THREE.EffectComposer( renderer, texture );
   const fgShaderPass = new THREE.ShaderPass( fgShader );
   composer.addPass( renderScene );
   composer.addPass( fgShaderPass );
+
 
   return {
     resize({ pixelRatio, viewportWidth, viewportHeight }) {
@@ -199,14 +229,28 @@ const sketch = ({ context, width, height }) => {
       camera.updateProjectionMatrix();
     },
     render ({time}) {
+      setShaderUniforms(lightBackground.material, { time: time })
+      
+
+      // render scene to texture
+      renderer.setRenderTarget(texture)
+      renderer.render(lightScene, camera)
+
+      // // figure out brightness of center
+      renderer.readRenderTargetPixels(texture, width/2 - 3, height/2 - 3, PIXEL_BUFFER_SIZE, PIXEL_BUFFER_SIZE, pixelBuffer)
+      let brightness = getBrightnessFromBuffer(pixelBuffer)
+
       setShaderUniforms(background.material, { time: time })
-      setShaderUniforms(mesh.material, { time: time, radius: mesh.geometry.parameters.radius })
+      setShaderUniforms(mesh.material, { time: time, radius: mesh.geometry.parameters.radius, brightness : (brightness - 0.1) * 10 + 0.2 })
       setShaderUniforms(fgShaderPass, { time: time })
 
       mesh.rotation.y = time / 5
       mesh.rotation.x = time / 7
 
+      // render scene
+      renderer.setRenderTarget( null )
       composer.render();
+
 
     },
     unload () {
