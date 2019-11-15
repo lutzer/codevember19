@@ -2,7 +2,13 @@ global.THREE = require("three");
 
 const canvasSketch = require('canvas-sketch');
 const glslify = require('glslify');
-const random = require('canvas-sketch-util/random');
+
+require('three/examples/js/postprocessing/EffectComposer.js');
+require('three/examples/js/postprocessing/ShaderPass.js');
+require('three/examples/js/shaders/CopyShader.js');
+require('three/examples/js/postprocessing/RenderPass.js');
+require('three/examples/js/postprocessing/UnrealBloomPass.js');
+require('three/examples/js/shaders/LuminosityHighPassShader.js');
 
 // Setup our sketch
 const settings = {
@@ -11,73 +17,137 @@ const settings = {
   animate: true
 };
 
-// Your glsl code
-const fragmentShader = glslify( /*glsl*/ `
-  precision highp float;
+const bgShader = {
+  uniforms: {
+    // Expose props from canvas-sketch
+    time: { value: 1.0 },
+    bg_gradient_top: { value: rgbToVec3(34, 82, 130) },
+    bg_gradient_bottom: { value: rgbToVec3(0, 0, 0) },
+    light_angle: { value: 30 / 360 * Math.PI },
+    nFreq: { value: 4.0 }
+  },
+  fragmentShader: glslify( /*glsl*/ `
+    precision highp float;
 
-  uniform float time;
-  uniform vec3 bg_gradient_top;
-  uniform vec3 bg_gradient_bottom;
-  uniform float light_angle;
-  uniform float nFreq;
-  varying vec2 vUv;
+    uniform float time;
+    uniform vec3 bg_gradient_top;
+    uniform vec3 bg_gradient_bottom;
+    uniform float light_angle;
+    uniform float nFreq;
+    varying vec2 vUv;
 
-  #pragma glslify: noise = require('glsl-noise/simplex/3d');
+    #pragma glslify: noise = require('glsl-noise/simplex/3d');
 
-  void main () {
-    vec3 bg = mix(bg_gradient_top, bg_gradient_bottom, 1.0-vUv.y);
+    void main () {
+      vec3 bg = mix(bg_gradient_top, bg_gradient_bottom, 1.0-vUv.y);
 
-    vec2 rot = vec2(cos(light_angle) * vUv.x - sin(light_angle) * vUv.y, 
-                    sin(light_angle) * vUv.x + cos(light_angle) * vUv.y);
+      vec2 rot = vec2(cos(light_angle) * vUv.x - sin(light_angle) * vUv.y, 
+                      sin(light_angle) * vUv.x + cos(light_angle) * vUv.y);
 
-    float pos = (vUv.x - vUv.y) * 0.5;
+      float light = noise(vec3(rot.x * nFreq, time * 0.2, 0.0));
 
-    float light = noise(vec3(rot.x * nFreq, time * 0.2, 0.0));
+      light *= rot.y * rot.y * rot.y * 0.2;
 
-    light *= rot.y * rot.y * rot.y * 0.2;
-
-    vec3 color = mix(bg, vec3(1.0,1.0,1.0), light);
-    gl_FragColor = vec4(color, 1.0);
-  }
-`);
-
-const vertexShader = glslify(/* glsl */`
+      vec3 color = mix(bg, vec3(1.0,1.0,1.0), light);
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `),
+  vertexShader: glslify(/* glsl */`
     varying vec2 vUv;
     void main () {
       vUv = uv;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position.xyz, 1.0);
     }
-`);
+  `)
+}
+
+const fgShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    light_angle: { value: 30 / 360 * Math.PI },
+    nFreq: { value: 3.0 },
+    time: { value: 1.0 }
+
+  },
+  vertexShader: glslify(/* glsl */`
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1);
+    }
+  `),
+  fragmentShader: glslify(/* glsl */`
+    precision highp float;
+
+    uniform sampler2D tDiffuse;
+    uniform float time;
+    uniform float light_angle;
+    uniform float nFreq;
+
+    varying vec2 vUv;
+
+    #pragma glslify: noise = require('glsl-noise/simplex/3d');
+
+    void main() {
+      vec4 prevColor = texture2D(tDiffuse, vUv);
+
+      vec2 rot = vec2(cos(light_angle) * vUv.x - sin(light_angle) * vUv.y, 
+                    sin(light_angle) * vUv.x + cos(light_angle) * vUv.y);
+
+
+      float light = noise(vec3(rot.x * nFreq, time * 0.2, 0.0));
+
+      light *= rot.y * rot.y * rot.y * 0.4;
+
+      vec3 color = mix(prevColor.rgb, vec3(1.0,1.0,1.0), light);
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `),
+};
+
+const meshShader = {
+  uniforms: {
+    time: { value: 1.0},
+    radius: { value: 0.1 }
+  },
+  fragmentShader: glslify(/* glsl */`
+    #pragma glslify: hsl2rgb = require('glsl-hsl2rgb');
+    #pragma glslify: noise = require('glsl-noise/simplex/3d);
+    uniform float time;
+    varying float n;
+    varying vec2 vUv;
+    void main () {
+      float hue = n * 0.3;
+      hue = mod(hue + time * 0.05, 1.0);
+
+      float dot = noise(vec3(vUv.x * 120., vUv.y * 40., time * 1.));
+
+      float v = (dot > 0.5) ? (dot - 0.5) + 0.3 : 0.4;
+      vec3 color = hsl2rgb(hue, 0.4, v);
+      gl_FragColor = vec4(color, 1.0);
+    }
+  `),
+  vertexShader: glslify(/* glsl */`
+    #pragma glslify: noise = require('glsl-noise/simplex/4d);
+    uniform float time;
+    uniform float radius;
+    varying float n;
+    varying vec2 vUv;
+    void main () {
+      vUv = uv;
+      n = noise(vec4(position.xyz * 4., time / 15.));
+      vec3 transformed = position.xyz + normal * n * radius;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(transformed, 1.0);
+    }
+  `)
+}
 
 function rgbToVec3(r,g,b) { return [ r / 255, g / 255, b / 255 ] };
 function setShaderUniforms(material, uniforms) {
   Object.keys(uniforms).forEach( (key) => {
     material.uniforms[key].value = uniforms[key]
   });
-}
-
-function computeSphereNormals(vertices) {
-  return vertices.map( (vertex) => {
-    return vertex.clone().normalize()
-  })
-}
-
-/**
- * @param {THREE.Mesh} object
- * @param {THREE.Vector3} center
- */
-function morphCircle(vertices, normals, radius, shift, time) {
-  let weight = radius * shift
-
-  vertices.forEach( (vertex, index) => {
-    let normal = normals[index]
-
-    let offset = random.noise4D(normal.x, normal.y, 0, time / 10)
-
-    vertex.x = normal.x * (radius + offset * weight);
-    vertex.y = normal.y * (radius + offset * weight);
-    vertex.z = normal.z * (radius + offset * weight);
-  })
 }
 
 // Your sketch, which simply returns the shader
@@ -102,54 +172,24 @@ const sketch = ({ context, width, height }) => {
   // add background plane
   const background = new THREE.Mesh(
     new THREE.PlaneGeometry(1,1),
-    new THREE.ShaderMaterial({
-      uniforms: {
-            // Expose props from canvas-sketch
-            time: { value: 1.0 },
-            bg_gradient_top: { value: rgbToVec3(34, 82, 130) },
-            bg_gradient_bottom: { value: rgbToVec3(18, 46, 74) },
-            light_angle: { value: 30 / 360 * Math.PI },
-            nFreq: { value: 4.0 }
-      },
-      fragmentShader: fragmentShader,
-      vertexShader: vertexShader
-    })
+    new THREE.ShaderMaterial(bgShader)
   );
   scene.add(background);
 
   // add particles
   const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(0.15,32,32),
-    new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      transparent: true, 
-      opacity: 0.8,
-      roughness: 0.5,
-      metalness: 0.8,
-      wireframe: false
-    })
+    new THREE.SphereGeometry(0.1,64,64),
+    new THREE.ShaderMaterial(meshShader)
   );
-  const meshNormals = computeSphereNormals(mesh.geometry.vertices);
   mesh.position.set(0,0,0.2)
   scene.add(mesh)
 
-  // setup light
-  scene.add(new THREE.AmbientLight( 0x156abf ));
-  var light = new THREE.DirectionalLight( 0xffffff, 0.1 );
-  light.position.set( 0.4, 1.0, 0.1 );
-  scene.add(light)
+  const renderScene = new THREE.RenderPass( scene, camera );
 
-  var light2 = new THREE.DirectionalLight( 0xffffff, 0.1 );
-  light2.position.set( -0.4, -0.0, 0.4 );
-  scene.add(light2)
-
-  // var morphShift = 0.5
-  // context.canvas.addEventListener("mousemove", (e) => {
-  //   let u = e.layerX * 2/width - 1.0
-  //   let v = e.layerY * 2/width - 1.0
-  //   let dist = Math.min(Math.sqrt(u*u + v*v), 0.5)
-  //   morphShift = dist
-  // });
+  const composer = new THREE.EffectComposer( renderer );
+  const fgShaderPass = new THREE.ShaderPass( fgShader );
+  composer.addPass( renderScene );
+  composer.addPass( fgShaderPass );
 
   return {
     resize({ pixelRatio, viewportWidth, viewportHeight }) {
@@ -159,23 +199,14 @@ const sketch = ({ context, width, height }) => {
       camera.updateProjectionMatrix();
     },
     render ({time}) {
-      morphCircle(mesh.geometry.vertices, meshNormals, mesh.geometry.parameters.radius, 0.4, time)
-      mesh.geometry.verticesNeedUpdate = true;
-      mesh.material.needsUpdate = true;
-      // mesh.material.needsUpdate = true;
       setShaderUniforms(background.material, { time: time })
-      //setShaderUniforms(particle.material, { time: time })
-      // particle.position.set(time/5 % 1.0 - 0.5,0,0.2)
-      renderer.render(scene, camera);
+      setShaderUniforms(mesh.material, { time: time, radius: mesh.geometry.parameters.radius })
+      setShaderUniforms(fgShaderPass, { time: time })
 
-      let shiftX = random.noise2D(time / 10, 0.0) * 0.1;
-      let shiftY = random.noise2D(time / 10, 1.0) * 0.1;
-      let shiftZ = random.noise2D(time / 10, 2.0) * 0.2;
-      mesh.position.setX(shiftX);
-      mesh.position.setY(shiftY)
-      mesh.position.setZ(shiftZ + 0.2)
-      mesh.rotateX(0.003)
-      mesh.rotateY(0.005)
+      mesh.rotation.y = time / 5
+      mesh.rotation.x = time / 7
+
+      composer.render();
 
     },
     unload () {
