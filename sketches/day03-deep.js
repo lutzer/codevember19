@@ -39,6 +39,7 @@ const bgShader = {
     varying vec2 vUv;
 
     #pragma glslify: noise = require('glsl-noise/simplex/3d');
+    #pragma glslify: worley3D = require(glsl-worley/worley3D.glsl)
 
     void main () {
       vec3 bg = mix(bg_gradient_top, bg_gradient_bottom, 1.0-vUv.y);
@@ -51,6 +52,13 @@ const bgShader = {
       light *= rot.y * rot.y * rot.y * 0.2;
 
       vec3 color = mix(bg, vec3(1.0,1.0,1.0), light);
+
+      // add floating dots
+      vec2 T = worley3D(vec3(vUv.x * 5.0, vUv.y * 5.0 - time * 0.2,1.0), 1.0, false);
+      float x = (T.x < 0.085) ? T.x * 8.0 : 0.0;
+      color = mix(color, vec3(1.0), x * 0.2);
+
+
       gl_FragColor = vec4(color, 1.0);
     }
   `),
@@ -89,21 +97,33 @@ const fgShader = {
     varying vec2 vUv;
 
     #pragma glslify: noise = require('glsl-noise/simplex/3d');
+    #pragma glslify: worley3D = require(glsl-worley/worley3D.glsl)
 
     void main() {
       vec4 prevColor = texture2D(tDiffuse, vUv);
 
+      // add light
       vec2 rot = vec2(cos(light_angle) * vUv.x - sin(light_angle) * vUv.y, 
                     sin(light_angle) * vUv.x + cos(light_angle) * vUv.y);
-
-
       float light = noise(vec3(rot.x * nFreq, time * 0.2, 0.0));
-
       light *= rot.y * rot.y * rot.y * 0.4;
-
       vec3 color = mix(prevColor.rgb, vec3(1.0,1.0,1.0), light);
 
+      // add floating dots
+      vec2 T = worley3D(vec3(vUv.x * 5.0, vUv.y * 5.0 - time * 0.5,0.0), 1.0, false);
+      float x = (T.x < 0.088) ? T.x * 8.0 : 0.0;
+      color = mix(color, vec3(1.0), x * 0.2);
+
+
+      vec2 F = worley3D(vec3(vUv.xy * 90.0, time / 1.0), 1.0, false);
+      color = mix(color, vec3(1.0), F.x * 0.05);
+
+      
+
       gl_FragColor = vec4(color, 1.0);
+
+      
+      // gl_FragColor = vec4(vec3(x), 1.0);
     }
   `),
 };
@@ -204,7 +224,7 @@ const sketch = ({ context, width, height }) => {
 
   // add particles
   const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(0.1,64,64),
+    new THREE.SphereGeometry(0.13,64,64),
     new THREE.ShaderMaterial(meshShader)
   );
   mesh.position.set(0,0,0.2)
@@ -219,7 +239,6 @@ const sketch = ({ context, width, height }) => {
   const fgShaderPass = new THREE.ShaderPass( fgShader );
   composer.addPass( renderScene );
   composer.addPass( fgShaderPass );
-
 
   return {
     resize({ pixelRatio, viewportWidth, viewportHeight }) {
