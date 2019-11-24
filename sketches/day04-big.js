@@ -12,27 +12,32 @@ const settings = {
 
 const MULT_SPEED = 1000
 const MULT_ROT = 10
-const TRIANGLE_SIZE = 0.2
+const TRIANGLE_SIZE = 0.1
 
 const sketch = () => {
   const margin = - 20
-  // const colors = palettes[3]
+  
+  // generate random values
   const colors = random.shuffle(random.pick(palettes));
+
+  const triangleSize = Math.random() * 0.05 + 0.01
+  const multSpeed = Math.random() * 500 + 500
+  const numberOfTriangles = Math.round(Math.random() * 100 + 900)
 
   const createTriangles = (number) => Array(number).fill(0).map( (val, index) => {
     return { 
       x: Math.random(),
       y: Math.random(),
-      l1: random.noise3D(0, index, 0) * TRIANGLE_SIZE,
-      l2: random.noise3D(0.1, index, 0) * TRIANGLE_SIZE,
+      l1: random.noise3D(0, index, 0) * triangleSize,
+      l2: random.noise3D(0.1, index, 0) * triangleSize,
       rotation: Math.random() * Math.PI * 2,
       rotVelocity: (Math.random() -0.5) * MULT_ROT,
-      velocity: [(Math.random() - 0.5) * MULT_SPEED, (Math.random() - 0.5) * MULT_SPEED],
+      velocity: [(Math.random() - 0.5) * multSpeed, (Math.random() - 0.5) * multSpeed],
       color: random.pick(colors)
     }
   }) 
 
-  const triangles = createTriangles(100)
+  const triangles = createTriangles(numberOfTriangles)
   // console.log(triangles)
   let lastFrameTime = 0
 
@@ -43,16 +48,16 @@ const sketch = () => {
 
     context.globalCompositeOperation = "normal"
       
-    // context.fillStyle = 'white'
-    // context.fillRect(0, 0, width, height)
-    // context.globalCompositeOperation = "multiply"
+    context.fillStyle = 'white'
+    context.globalAlpha = 0.005
+    context.fillRect(0, 0, width, height)
 
     //update triangles
     triangles.forEach( (triangle, index) => {
       let mass = triangle.l1 * triangle.l2 / 2;
 
-      triangle.l1 = random.noise3D(0, index, time * 0.1) * TRIANGLE_SIZE
-      triangle.l2 = random.noise3D(0.1, index, time * 0.1) * TRIANGLE_SIZE
+      triangle.l1 = random.noise3D(0, index, time * 0.1) * triangleSize
+      triangle.l2 = random.noise3D(0.1, index, time * 0.1) * triangleSize
 
       // // calculate center attraction
       // let toCenter = [ 0.5 - triangle.x, 0.5 - triangle.y]
