@@ -7,6 +7,7 @@
     "day1": "canvas-sketch sketches/day01-contrast.js --open --hot",
     "day2": "canvas-sketch sketches/day02-geometric.js --open --hot",
     "day3": "canvas-sketch sketches/day03-deep.js --open --hot",
+    "day4": "canvas-sketch sketches/day04-big.js --open --hot",
     "build": "canvas-sketch --dir docs --build --inline",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
