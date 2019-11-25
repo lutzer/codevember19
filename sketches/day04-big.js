@@ -10,9 +10,7 @@ const settings = {
   fps: 24
 }
 
-const MULT_SPEED = 1000
 const MULT_ROT = 10
-const TRIANGLE_SIZE = 0.1
 
 const sketch = () => {
   const margin = - 20
@@ -20,19 +18,21 @@ const sketch = () => {
   // generate random values
   const colors = random.shuffle(random.pick(palettes));
 
-  const triangleSize = Math.random() * 0.05 + 0.01
-  const multSpeed = Math.random() * 500 + 500
-  const numberOfTriangles = Math.round(Math.random() * 100 + 900)
+  const triangleSize = random.range(0.01,0.02)
+  const multSpeed = random.range(500,1000)
+  const numberOfTriangles = random.rangeFloor(300,1000)
 
   const createTriangles = (number) => Array(number).fill(0).map( (val, index) => {
+    let x = Math.random()
+    let y = Math.random()
     return { 
-      x: Math.random(),
-      y: Math.random(),
+      x: x,
+      y: y,
       l1: random.noise3D(0, index, 0) * triangleSize,
       l2: random.noise3D(0.1, index, 0) * triangleSize,
       rotation: Math.random() * Math.PI * 2,
       rotVelocity: (Math.random() -0.5) * MULT_ROT,
-      velocity: [(Math.random() - 0.5) * multSpeed, (Math.random() - 0.5) * multSpeed],
+      velocity: [(x - 0.5) * random.range(0.1,1) * multSpeed, (y - 0.5) * random.range(0.1,1) * multSpeed],
       color: random.pick(colors)
     }
   }) 
@@ -42,60 +42,39 @@ const sketch = () => {
   let lastFrameTime = 0
 
 
-  return ({ context, width, height, time }) => {
+  return ({ context, width, height, time, frame }) => {
     let deltaT = (time - lastFrameTime) / 1000;
     lastFrameTime = time
 
     context.globalCompositeOperation = "normal"
       
-    context.fillStyle = 'white'
-    context.globalAlpha = 0.005
+    context.fillStyle = 'black'
+    context.globalAlpha = frame == 0 ? 1 : 0.1
     context.fillRect(0, 0, width, height)
 
     //update triangles
     triangles.forEach( (triangle, index) => {
-      let mass = triangle.l1 * triangle.l2 / 2;
 
-      triangle.l1 = random.noise3D(0, index, time * 0.1) * triangleSize
-      triangle.l2 = random.noise3D(0.1, index, time * 0.1) * triangleSize
-
-      // // calculate center attraction
-      // let toCenter = [ 0.5 - triangle.x, 0.5 - triangle.y]
-      // let dist = Math.sqrt(toCenter[0] * toCenter[0] + toCenter[1] * toCenter[1])
-      // let force = 8000 * mass / (dist * dist) * deltaT
-      //   - 6000 * mass / (dist * dist * dist ) * deltaT
-
-      // let acc = [force * toCenter[0], force * toCenter[1]]
-
-      // // add acceleration
-      // triangle.velocity = [ triangle.velocity[0] + acc[0], triangle.velocity[1] + acc[1]]
-
-      // // add friction
-      // triangle.velocity = [triangle.velocity[0] * 1.0, triangle.velocity[1] * 1.0]
-
+      // move triangle
       triangle.x = triangle.x + triangle.velocity[0] * deltaT
       triangle.y = triangle.y + triangle.velocity[1] * deltaT
 
-      // deflect
-      if (triangle.x < 0) {
-        triangle.x = 0
-        triangle.velocity[0] *= -1
-      } else if (triangle.x > 1) {
-        triangle.x = 1
-        triangle.velocity[0] *= -1
+      // deflect on circle
+      let toCenter = [ 0.5 - triangle.x, 0.5 - triangle.y]
+      let dist = Math.sqrt(toCenter[0] * toCenter[0] + toCenter[1] * toCenter[1])
+      
+      if (dist > 0.6) {
+        triangle.x = 0.5
+        triangle.y = 0.5
       }
 
-      if (triangle.y < 0) {
-        triangle.y = 0
-        triangle.velocity[1] *= -1
-      } else if (triangle.y > 1) {
-        triangle.y = 1
-        triangle.velocity[1] *= -1
-      }
-
+      // change shape
+      triangle.l1 = random.noise3D(0, index, time * 0.1) * triangleSize * 1/Math.max(0.2,dist)
+      triangle.l2 = random.noise3D(0.1, index, time * 0.1) * triangleSize * 1/Math.max(0.2,dist)
 
       // rotate
-      triangle.rotation += triangle.rotVelocity * deltaT / Math.max(0.005,mass)
+      let mass = triangle.l1 * triangle.l2 / 2;
+      triangle.rotation += triangle.rotVelocity * deltaT / Math.max(0.01,mass)
 
       
     })
@@ -103,7 +82,7 @@ const sketch = () => {
     // draw triangles
     triangles.forEach( ({x, y, l1, l2, rotation, color}, index) => {
       context.fillStyle = color
-      context.globalAlpha = 0.1
+      context.globalAlpha = 0.6
 
       let p1 = [ x, y ]
       let p2 = [ x + Math.cos(rotation) * l1, y + Math.sin(rotation) * l1]
