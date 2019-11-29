@@ -1,3 +1,5 @@
+One short graphical sketch per day. Code can be found here: https://github.com/lutzer/codevember19/tree/master/sketches
+
 ## Sketches
 
 * [day01-contrast.html](day01-contrast.html)
