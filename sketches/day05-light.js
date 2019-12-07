@@ -1,13 +1,14 @@
 global.THREE = require("three");
 
 const canvasSketch = require('canvas-sketch');
+const random = require('canvas-sketch-util/random');
 const glslify = require('glslify');
 const _ = require("lodash");
 
 require('three/examples/js/controls/OrbitControls.js')
 require('three/examples/js/postprocessing/EffectComposer.js');
 require('three/examples/js/postprocessing/ShaderPass.js');
-// require('three/examples/js/shaders/CopyShader.js');
+require('three/examples/js/shaders/CopyShader.js');
 require('three/examples/js/postprocessing/RenderPass.js');
 // require('three/examples/js/postprocessing/UnrealBloomPass.js');
 // require('three/examples/js/shaders/LuminosityHighPassShader.js');
@@ -25,7 +26,7 @@ const flameShader = {
   uniforms: {
     // Expose props from canvas-sketch
     time: { value: 1.0 },
-    grid: { value : 10.0 },
+    grid: { value : 15.0 },
     nFreq: { value: 4.0 },
     seed : { value : 0.0 },
     hue: { value: 0.0 }
@@ -45,17 +46,17 @@ const flameShader = {
 
     void main () {
       vec2 grid = floor(vUv.xy * grid) / grid;
-      float n = noise(vec3(grid.x * 2., grid.y * 0.8 - time * 1.5, time * 1.0 + seed));
+      float n = noise(vec3(grid.x * 2., grid.y * 0.8 - time * 1.0, time * 0.5 + seed));
 
-      float prob = log(grid.y) / log(15.0);
+      float prob = log(grid.y) / log(2.0);
 
-      float brightness = (prob * n) > 0.1 ? min(0.5, prob * n) : 0.0;
+      float brightness = (prob * n) > 0.1 ? prob * n : 0.0;
 
-      vec3 hsv = vec3(hue + brightness * 0.3, 1.0, brightness);
+      vec3 hsv = vec3(hue + brightness * 0.1, 1.0, brightness);
 
       vec3 color = hsv2rgb(hsv);
       // vec3 color = vec3(seed / 10.0);
-      gl_FragColor = vec4(color, brightness) + 0.1;
+      gl_FragColor = vec4(color, brightness * 0.3);
     }
   `),
   vertexShader: glslify(/* glsl */`
@@ -73,6 +74,12 @@ function setShaderUniforms(material, uniforms) {
   });
 }
 
+function randomWalk(pos, speed, dt) {
+  const walk = random.onCircle(speed * dt)
+  const newPos = [ pos[0] + walk[0], pos[1] + walk[1] ]
+  return newPos
+}
+
 // Your sketch, which simply returns the shader
 const sketch = ({ context, width, height }) => {
 
@@ -88,9 +95,9 @@ const sketch = ({ context, width, height }) => {
   const camera = new THREE.PerspectiveCamera(60, 1, 0.01, 100);
   camera.position.set(0, 0, 2);
   camera.lookAt(new THREE.Vector3());
-  const cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
-  cameraControls.autoRotate = false
-  cameraControls.autoRotateSpeed = 5.0
+  // const cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
+  // cameraControls.autoRotate = false
+  // cameraControls.autoRotateSpeed = 5.0
 
   // Setup your scene
   const scene = new THREE.Scene();
@@ -122,10 +129,13 @@ const sketch = ({ context, width, height }) => {
       camera.updateProjectionMatrix();
     },
     render ({time}) {
-      cameraControls.update();
+      // cameraControls.update();
+
+      // cameraPos = randomWalk(cameraPos, 0.2,0.025)
+      // camera.position.set(cameraPos[0], cameraPos[1], 2);
 
       flames.forEach( (flame, index) => {
-        setShaderUniforms(flame.material, { time: time, hue : time/20.0 + index * 0.03 })
+        setShaderUniforms(flame.material, { time: time, hue : time/30.0 + index * 0.03 })
       })
 
       composer.render()
