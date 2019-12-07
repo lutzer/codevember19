@@ -63,7 +63,7 @@ const sketch = () => {
       let toCenter = [ 0.5 - triangle.x, 0.5 - triangle.y]
       let dist = Math.sqrt(toCenter[0] * toCenter[0] + toCenter[1] * toCenter[1])
       
-      if (dist > 0.6) {
+      if (dist > 0.7) {
         triangle.x = 0.5
         triangle.y = 0.5
       }
