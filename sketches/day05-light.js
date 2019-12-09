@@ -10,8 +10,8 @@ require('three/examples/js/postprocessing/EffectComposer.js');
 require('three/examples/js/postprocessing/ShaderPass.js');
 require('three/examples/js/shaders/CopyShader.js');
 require('three/examples/js/postprocessing/RenderPass.js');
-// require('three/examples/js/postprocessing/UnrealBloomPass.js');
-// require('three/examples/js/shaders/LuminosityHighPassShader.js');
+require('three/examples/js/postprocessing/UnrealBloomPass.js');
+require('three/examples/js/shaders/LuminosityHighPassShader.js');
 
 const PIXEL_BUFFER_SIZE = 6;
 
@@ -26,8 +26,9 @@ const flameShader = {
   uniforms: {
     // Expose props from canvas-sketch
     time: { value: 1.0 },
-    grid: { value : 15.0 },
-    nFreq: { value: 4.0 },
+    grid: { value : 12.0 },
+    xFreq: { value: 1.8 },
+    yFreq: { value: 0.8 },
     seed : { value : 0.0 },
     hue: { value: 0.0 }
   },
@@ -35,10 +36,11 @@ const flameShader = {
     precision highp float;
 
     uniform float time;
-    uniform float nFreq;
     uniform float grid;
     uniform float seed;
     uniform float hue;
+    uniform float xFreq;
+    uniform float yFreq;
     varying vec2 vUv;
 
     #pragma glslify: noise = require('glsl-noise/simplex/3d');
@@ -46,17 +48,18 @@ const flameShader = {
 
     void main () {
       vec2 grid = floor(vUv.xy * grid) / grid;
-      float n = noise(vec3(grid.x * 2., grid.y * 0.8 - time * 1.0, time * 0.5 + seed));
+      float n = noise(vec3(grid.x * xFreq, grid.y * yFreq - time * 1.0, time * 0.8 + seed));
 
-      float prob = log(grid.y) / log(2.0);
+      float prob = min(log(grid.y) / log(.05),1.0);
 
-      float brightness = (prob * n) > 0.1 ? prob * n : 0.0;
+      float brightness = (prob * n) > 0.1 ? abs(prob * n) : 0.0;
 
-      vec3 hsv = vec3(hue + brightness * 0.1, 1.0, brightness);
+      // vec3 hsv = vec3(hue + brightness * 0.1, 1.0, brightness);
+      vec3 hsv = vec3(hue + brightness * 0.15, 1.0, 1.0);
 
       vec3 color = hsv2rgb(hsv);
-      // vec3 color = vec3(seed / 10.0);
-      gl_FragColor = vec4(color, brightness * 0.3);
+      //vec3 color = vec3(prob);
+      gl_FragColor = vec4(color, brightness);
     }
   `),
   vertexShader: glslify(/* glsl */`
@@ -93,17 +96,14 @@ const sketch = ({ context, width, height }) => {
 
   // Setup a camera
   const camera = new THREE.PerspectiveCamera(60, 1, 0.01, 100);
-  camera.position.set(0, 0, 2);
+  camera.position.set(0.9, 0.5, 2.5);
   camera.lookAt(new THREE.Vector3());
-  // const cameraControls = new THREE.OrbitControls( camera, renderer.domElement );
-  // cameraControls.autoRotate = false
-  // cameraControls.autoRotateSpeed = 5.0
 
   // Setup your scene
   const scene = new THREE.Scene();
 
   // add flames
-  const flames = _.range(-0.4, 0.4, 0.1).map( (val, index) => {
+  const flames = _.range(-2.0, 0.5, 0.05).map( (val, index) => {
     const flame = new THREE.Mesh(
       new THREE.PlaneGeometry(1,1),
       new THREE.ShaderMaterial(_.cloneDeep(flameShader))
@@ -111,15 +111,25 @@ const sketch = ({ context, width, height }) => {
     flame.material.transparent = true
     flame.material.side = THREE.DoubleSide
     flame.position.setZ(val)
-    setShaderUniforms(flame.material, { seed: index  })
+    setShaderUniforms(flame.material, { 
+      seed: index
+    })
     scene.add(flame);
     return flame
   })
 
+      
   const renderScene = new THREE.RenderPass( scene, camera );
 
   const composer = new THREE.EffectComposer( renderer );
-  composer.addPass( renderScene );
+  composer.addPass(renderScene);
+
+  // var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+  // bloomPass.threshold =  0.4;
+  // bloomPass.strength = 0.3;
+  // bloomPass.radius = 10.0;
+
+  // composer.addPass(bloomPass)
 
   return {
     resize({ pixelRatio, viewportWidth, viewportHeight }) {
@@ -129,13 +139,9 @@ const sketch = ({ context, width, height }) => {
       camera.updateProjectionMatrix();
     },
     render ({time}) {
-      // cameraControls.update();
-
-      // cameraPos = randomWalk(cameraPos, 0.2,0.025)
-      // camera.position.set(cameraPos[0], cameraPos[1], 2);
 
       flames.forEach( (flame, index) => {
-        setShaderUniforms(flame.material, { time: time, hue : time/30.0 + index * 0.03 })
+        setShaderUniforms(flame.material, { time: time, hue : time/30.0 + index * 0.02 })
       })
 
       composer.render()
