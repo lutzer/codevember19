@@ -10,6 +10,7 @@
     "day4": "canvas-sketch sketches/day04-big.js --open --hot",
     "day5": "canvas-sketch sketches/day05-light.js --open --hot",
     "day7": "canvas-sketch sketches/day07-shape.js --open --hot",
+    "day8": "canvas-sketch sketches/day08-data.js --open --hot",
     "build": "canvas-sketch --dir docs --build --inline",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,16 +18,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "canvas-sketch": "^0.7.1",
+    "canvas-sketch": "^0.7.3",
     "canvas-sketch-util": "^1.10.0",
     "color-interpolate": "^1.0.5",
+    "csv-parse": "^4.8.8",
     "glsl-hsl2rgb": "^1.1.0",
     "glsl-noise": "0.0.0",
     "glsl-worley": "^1.0.2",
     "glsl-y-hsv": "^1.0.0",
     "glslify": "^7.0.0",
+    "load-asset": "^1.2.0",
     "lodash": "^4.17.15",
     "nice-color-palettes": "^3.0.0",
-    "three": "^0.110.0"
+    "three": "^0.114.0"
   }
 }
