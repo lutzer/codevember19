@@ -9,6 +9,7 @@
     "day3": "canvas-sketch sketches/day03-deep.js --open --hot",
     "day4": "canvas-sketch sketches/day04-big.js --open --hot",
     "day5": "canvas-sketch sketches/day05-light.js --open --hot",
+    "day7": "canvas-sketch sketches/day07-shape.js --open --hot",
     "build": "canvas-sketch --dir docs --build --inline",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,6 +19,7 @@
   "dependencies": {
     "canvas-sketch": "^0.7.1",
     "canvas-sketch-util": "^1.10.0",
+    "color-interpolate": "^1.0.5",
     "glsl-hsl2rgb": "^1.1.0",
     "glsl-noise": "0.0.0",
     "glsl-worley": "^1.0.2",
