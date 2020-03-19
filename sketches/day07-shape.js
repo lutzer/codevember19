@@ -12,14 +12,24 @@ const settings = {
 }
 
 const params = {
-  circleSize : settings.dimensions[0] / 1,
+  circleSize : settings.dimensions[0] / 1.6,
   numberOfLines: random.rangeFloor(50, 250),
   noiseFreq: random.range(2,6)
 }
 
 
-function wrappableNoise3D(x,y,z, octave = 5) {
-  return random.noise3D(x, y, z)
+function wrappableNoise2D(x, y, octave = 1) {
+  return random.noise3D(
+    Math.sin(x/octave * Math.PI * 2), 
+    Math.cos(x/octave * Math.PI * 2), 
+    y
+  )
+}
+
+function euclidianDistance(p1,p2) {
+  let dx = p2[0]-p1[0]
+  let dy = p2[1]-p1[1]
+  return Math.sqrt(dx*dx+dy*dy)
 }
 
 const sketch = () => {
@@ -27,33 +37,40 @@ const sketch = () => {
   const colormap = interpolate(colors);
 
   const createVertices = (number, time) => Array(number).fill(0).map( (val, index) => {
-    let length = lerp(0.2, 1.0, (wrappableNoise3D(index / number * 5, time, 0) + 1.0) * 0.5)
+    let length = lerp(0.2, 1.0, wrappableNoise2D(index / number * 5, time, 5) * 0.5 + 1.0)
     let angle = (index / number) * Math.PI * 2
     return {
        point: [Math.cos(angle) * length, Math.sin(angle) * length],
-       color: colormap(length)
+       length: length
     }
   })
 
 
-  return ({ context, width, height, time }) => {
+  var pairs = []
+
+
+  return ({ context, width, height, time, frame }) => {
 
     context.fillStyle = 'white'
     context.globalAlpha = 0.05
     context.fillRect(0, 0, width, height)
 
-    const vertices = createVertices(params.numberOfLines, time / 10)
+    const vertices = createVertices(params.numberOfLines, time / 8)
 
-    context.globalAlpha = 0.1
+    
 
-
-    const pairs = _.zip(vertices, _.shuffle(vertices))
+    // shuffle pairs
+    pairs = _.zip(_.range(params.numberOfLines), _.shuffle(_.range(params.numberOfLines)))
 
     // draw Lines
-    pairs.forEach( ([v1, v2]) => {
+    pairs.forEach( (pair) => {
+      let v1 = vertices[pair[0]]
+      let v2 = vertices[pair[1]]
       let p1 = [ width / 2 + v1.point[0] * params.circleSize, height/2 + v1.point[1] * params.circleSize]
       let p2 = [ width / 2 + v2.point[0] * params.circleSize, height/2 + v2.point[1] * params.circleSize]
+
       context.strokeStyle = 'black'
+      context.globalAlpha = 0.1
       context.beginPath()
       context.moveTo(p1[0], p1[1])
       context.lineTo(p2[0], p2[1])
@@ -62,7 +79,7 @@ const sketch = () => {
     })
 
     context.strokeStyle = 'black'
-    context.globalAlpha = 0.1
+    context.globalAlpha = 0.2
 
     context.beginPath()
     vertices.forEach( ({point}, index) => {
