@@ -95,9 +95,9 @@ const sketch = ({ context, width, height }) => {
   renderer.setClearColor("#000", 1.0);
 
   // Setup a camera
-  const camera = new THREE.PerspectiveCamera(60, 1, 0.01, 100);
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 100);
   camera.position.set(0.9, 0.5, 2.5);
-  camera.lookAt(new THREE.Vector3());
+  camera.lookAt(new THREE.Vector3(0,-0.12,0));
 
   // Setup your scene
   const scene = new THREE.Scene();
