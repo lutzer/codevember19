@@ -3,8 +3,6 @@
  * Data from https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases
  */
 
- console.log(process)
-
 // Ensure ThreeJS is in global scope
 global.THREE = require("three");
 
@@ -25,7 +23,8 @@ const settings = {
 }
 
 const params = {
-  cameraDistance : 50
+  cameraDistance : 80,
+  dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
 }
 
 function polarToCartesian(latitude, longitude, radius = 1) {
@@ -35,10 +34,17 @@ function polarToCartesian(latitude, longitude, radius = 1) {
   return [ x, y, z]
 }
 
+function easeInOutQuad(t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t }
+
 const sketch = async ({ context, frame }) => {
 
   // load data
-  const rawdata = await load({ url: 'https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_19-covid-Confirmed.csv&filename=time_series_2019-ncov-Confirmed.csv', type: 'text' });
+  var rawdata = ""
+  try {
+    rawdata = await load({ url: params.dataUrl, type: 'text' });
+  } catch (err) {
+    alert("Could not fetch data from " + params.dataUrl)
+  }
   //const rawdata = await load({ url: __dirname + '/assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
   
   // parse data
@@ -46,7 +52,7 @@ const sketch = async ({ context, frame }) => {
     return {
       name: line[1],
       coords: [ Number(line[2]), Number(line[3])],
-      values: _.concat( [0,0,0,0,0], line.slice(4).map(Number), [0])
+      values: line.slice(4).map(Number)
     }
   })
 
@@ -73,7 +79,9 @@ const sketch = async ({ context, frame }) => {
   const geometry = new THREE.BufferGeometry();
 
   const lines = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({
-    color: 0x000000
+    color: 0x000000,
+    transparent: true,
+    opacity: 0.9
   }));
   scene.add(lines);
 
@@ -90,11 +98,10 @@ const sketch = async ({ context, frame }) => {
     render({ playhead }) {
       // rotate camera
       camera.position.set(Math.sin(playhead*Math.PI*2) * params.cameraDistance, 0, Math.cos(playhead*Math.PI*2) * params.cameraDistance);
-
       // create vertices frm data
       const vertices = data.map( ({coords, values}, index) => { 
-        let cases = lerpFrames(values, playhead)
-        return _.concat([0,0,0], polarToCartesian(coords[0], coords[1], 1 + Math.log(1+cases)))
+        let cases = lerpFrames(_.concat([0],values,[0]), easeInOutQuad(playhead))
+        return _.concat([0,0,0], polarToCartesian(coords[0], coords[1], 5 + Math.log(1+cases)))
       })
       geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(_.flatten(vertices)), 3 ) );
 
