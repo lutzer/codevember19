@@ -12,6 +12,7 @@
     "day7": "canvas-sketch sketches/day07-shape.js --open --hot",
     "day8-1": "canvas-sketch sketches/day08-1-data.js --open --hot",
     "day8-2": "canvas-sketch sketches/day08-2-data.js --open --hot",
+    "day8-3": "canvas-sketch sketches/day08-3-data.js --open --hot",
     "build": "canvas-sketch --dir docs --build --inline",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

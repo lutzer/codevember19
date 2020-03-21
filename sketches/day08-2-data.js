@@ -51,9 +51,9 @@ const sketch = async ({ context, height, width }) => {
   try {
     rawdata = await load({ url: params.dataUrl, type: 'text' });
   } catch (err) {
-    alert("Could not fetch data from " + params.dataUrl)
+    rawdata = await load({ url: __dirname + '/../assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
   }
-  //const rawdata = await load({ url: __dirname + '/assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
+  
   
   // parse data
   const data = parseCsv(rawdata, { from_line: 2 }).map( (line) => {
@@ -84,8 +84,7 @@ const sketch = async ({ context, height, width }) => {
     // color: 0x000000,
     transparent: true,
     opacity: 0.5,
-    vertexColors: true,
-    linewidth: 20
+    vertexColors: true
   }));
   scene.add(lines);
 

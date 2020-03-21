@@ -23,7 +23,7 @@ const settings = {
 }
 
 const params = {
-  cameraDistance : 80,
+  cameraDistance : 50,
   dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
 }
 
@@ -43,9 +43,8 @@ const sketch = async ({ context, frame }) => {
   try {
     rawdata = await load({ url: params.dataUrl, type: 'text' });
   } catch (err) {
-    alert("Could not fetch data from " + params.dataUrl)
+    rawdata = await load({ url: __dirname + '/../assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
   }
-  //const rawdata = await load({ url: __dirname + '/assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
   
   // parse data
   const data = parseCsv(rawdata, { from_line: 2 }).map( (line) => {
@@ -101,7 +100,7 @@ const sketch = async ({ context, frame }) => {
       // create vertices frm data
       const vertices = data.map( ({coords, values}, index) => { 
         let cases = lerpFrames(_.concat([0],values,[0]), easeInOutQuad(playhead))
-        return _.concat([0,0,0], polarToCartesian(coords[0], coords[1], 5 + Math.log(1+cases)))
+        return _.concat([0,0,0], polarToCartesian(coords[0], coords[1], Math.log(1+cases)))
       })
       geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(_.flatten(vertices)), 3 ) );
 
