@@ -12,7 +12,7 @@
     "day7": "canvas-sketch sketches/day07-shape.js --open --hot",
     "day8-1": "canvas-sketch sketches/day08-1-data.js --dir docs --html=sketches/template.html --open --hot",
     "day8-2": "canvas-sketch sketches/day08-2-data.js --dir docs --html=sketches/template.html --open --hot",
-    "day8-3": "canvas-sketch sketches/day08-3-data.js --dir docs --open --hot",
+    "day8-3": "canvas-sketch sketches/day08-3-data.js --dir docs --html=sketches/template.html --open --hot",
     "build": "canvas-sketch --dir docs --build --html=sketches/template.html --inline",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

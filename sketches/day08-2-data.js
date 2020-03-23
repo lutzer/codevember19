@@ -1,8 +1,3 @@
-/*
- * Visualisation of Corona cases 
- * Data from https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases
- */
-
 // Ensure ThreeJS is in global scope
 global.THREE = require("three");
 
@@ -44,10 +39,6 @@ function polarToCartesian(latitude, longitude, radius = 1) {
 }
 
 function easeInOutQuad(t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t }
-
-window.onload = () => {
-  setTitle(`Cases starting from 22nd of January`, settings.dimensions)
-}
 
 const sketch = async ({ context, height, width }) => {
 
@@ -100,16 +91,18 @@ const sketch = async ({ context, height, width }) => {
   effectHBlur.uniforms[ 'h' ].value = 2 / ( width / 0.05 );
   effectVBlur.uniforms[ 'v' ].value = 2 / ( height / 0.05 );
 
-   var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
-   bloomPass.threshold =  0.01;
-   bloomPass.strength = 1.0;
-   bloomPass.radius = 0;
- 
-   const composer = new THREE.EffectComposer( renderer );
-   composer.addPass( new THREE.RenderPass( scene, camera ) );
-   composer.addPass( effectHBlur );
-   composer.addPass( effectVBlur );
-   composer.addPass( bloomPass );
+  var bloomPass = new THREE.UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+  bloomPass.threshold =  0.01;
+  bloomPass.strength = 1.0;
+  bloomPass.radius = 0;
+
+  const composer = new THREE.EffectComposer( renderer );
+  composer.addPass( new THREE.RenderPass( scene, camera ) );
+  composer.addPass( effectHBlur );
+  composer.addPass( effectVBlur );
+  composer.addPass( bloomPass );
+
+  setTitle(`Cases starting from 22nd of January`, settings.dimensions)
 
   // draw each frame
   return {

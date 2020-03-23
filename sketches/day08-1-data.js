@@ -1,8 +1,3 @@
-/*
- * Visualisation of Corona cases 
- * Data from https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases
- */
-
 // Ensure ThreeJS is in global scope
 global.THREE = require("three");
 
@@ -33,10 +28,6 @@ function polarToCartesian(latitude, longitude, radius = 1) {
 }
 
 function easeInOutQuad(t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t }
-
-window.onload = () => {
-  setTitle(`Cases starting from 22nd of January`, settings.dimensions)
-}
 
 const sketch = async ({ context, frame }) => {
 
@@ -82,6 +73,8 @@ const sketch = async ({ context, frame }) => {
     opacity: 0.9
   }));
   scene.add(lines);
+
+  setTitle(`Cases starting from 22nd of January`, settings.dimensions)
 
   // draw each frame
   return {
