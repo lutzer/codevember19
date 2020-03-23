@@ -6,14 +6,12 @@
 // Ensure ThreeJS is in global scope
 global.THREE = require("three");
 
-// Include any additional ThreeJS examples below
-require("three/examples/js/controls/OrbitControls");
-
 const canvasSketch = require("canvas-sketch");
 const load = require('load-asset');
 const parseCsv = require('csv-parse/lib/sync')
 const _ = require('lodash')
 const { lerpFrames } = require('canvas-sketch-util/math');
+const { setCaption, setTitle } = require('./utils')
 
 const settings = {
   dimensions: [ 512, 512 ],
@@ -36,6 +34,10 @@ function polarToCartesian(latitude, longitude, radius = 1) {
 
 function easeInOutQuad(t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t }
 
+window.onload = () => {
+  setTitle(`Cases starting from 22nd of January`, settings.dimensions)
+}
+
 const sketch = async ({ context, frame }) => {
 
   // load data
@@ -43,8 +45,9 @@ const sketch = async ({ context, frame }) => {
   try {
     rawdata = await load({ url: params.dataUrl, type: 'text' });
   } catch (err) {
-    rawdata = await load({ url: __dirname + '/../assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
+    rawdata = await load({ url: 'assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
   }
+
   
   // parse data
   const data = parseCsv(rawdata, { from_line: 2 }).map( (line) => {
@@ -55,6 +58,8 @@ const sketch = async ({ context, frame }) => {
     }
   })
 
+  const totalDays = data[0].values.length
+
   const renderer = new THREE.WebGLRenderer({
     canvas: context.canvas
   });
@@ -63,16 +68,10 @@ const sketch = async ({ context, frame }) => {
   const camera = new THREE.PerspectiveCamera(50, 1, 0.01, 100);
   camera.position.set(0, 0, params.cameraDistance);
 
-  // Setup camera controller
-  const controls = new THREE.OrbitControls(camera, context.canvas);
-
   renderer.setClearColor("#fff", 1);
 
   // Setup your scene
-  const scene = new THREE.Scene();
-
-  // create vertices from data
-  
+  const scene = new THREE.Scene();  
 
   // Setup point geometries
   const geometry = new THREE.BufferGeometry();
@@ -95,21 +94,25 @@ const sketch = async ({ context, frame }) => {
     },
     // Update & render your scene here
     render({ playhead }) {
+      let t = easeInOutQuad(playhead)
       // rotate camera
       camera.position.set(Math.sin(playhead*Math.PI*2) * params.cameraDistance, 0, Math.cos(playhead*Math.PI*2) * params.cameraDistance);
+      camera.lookAt(0,0,0)
+
       // create vertices frm data
       const vertices = data.map( ({coords, values}, index) => { 
-        let cases = lerpFrames(_.concat([0],values,[0]), easeInOutQuad(playhead))
+        let cases = lerpFrames(_.concat([0],values,[0]), t)
         return _.concat([0,0,0], polarToCartesian(coords[0], coords[1], Math.log(1+cases)))
       })
       geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(_.flatten(vertices)), 3 ) );
 
-      controls.update();
+      var day = Math.floor(t*totalDays)
+      setCaption(`Day ${day}`, settings.dimensions)
+
       renderer.render(scene, camera);
     },
     // Dispose of events & renderer for cleaner hot-reloading
     unload() {
-      controls.dispose();
       renderer.dispose();
     }
   };

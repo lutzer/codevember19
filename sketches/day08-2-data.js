@@ -22,6 +22,7 @@ const load = require('load-asset');
 const parseCsv = require('csv-parse/lib/sync')
 const _ = require('lodash')
 const { lerpFrames, mapRange } = require('canvas-sketch-util/math');
+const { setCaption, setTitle } = require('./utils')
 
 const settings = {
   dimensions: [ 512, 512 ],
@@ -44,6 +45,10 @@ function polarToCartesian(latitude, longitude, radius = 1) {
 
 function easeInOutQuad(t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t }
 
+window.onload = () => {
+  setTitle(`Cases starting from 22nd of January`, settings.dimensions)
+}
+
 const sketch = async ({ context, height, width }) => {
 
   // load data
@@ -51,9 +56,8 @@ const sketch = async ({ context, height, width }) => {
   try {
     rawdata = await load({ url: params.dataUrl, type: 'text' });
   } catch (err) {
-    rawdata = await load({ url: __dirname + '/../assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
+    rawdata = await load({ url: 'assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
   }
-  
   
   // parse data
   const data = parseCsv(rawdata, { from_line: 2 }).map( (line) => {
@@ -63,6 +67,8 @@ const sketch = async ({ context, height, width }) => {
       values: line.slice(4).map(Number)
     }
   })
+
+  const totalDays = data[0].values.length
 
   const renderer = new THREE.WebGLRenderer({
     canvas: context.canvas
@@ -116,12 +122,15 @@ const sketch = async ({ context, height, width }) => {
     },
     // Update & render your scene here
     render({ playhead }) {
+      let t = easeInOutQuad(playhead)
+
       // rotate camera
       camera.position.set(Math.sin(playhead*Math.PI*2) * params.cameraDistance, 0, Math.cos(playhead*Math.PI*2) * params.cameraDistance);
       camera.lookAt(0,0,0)
+
       // create vertices frm data
       const vertices = data.map( ({coords, values}, index) => { 
-        let cases = lerpFrames(_.concat([0],values,[0]), easeInOutQuad(playhead))
+        let cases = lerpFrames(_.concat([0],values,[0]), t)
         let casesLog = Math.log(1 + cases)
         let color = new THREE.Color()
         color.setHSL( mapRange(casesLog, 0, 7, 0.25, 0, true) , mapRange(casesLog, 0, 3, 0, 1.0, true), 0.5);
@@ -130,6 +139,9 @@ const sketch = async ({ context, height, width }) => {
           color: [ 0,0,0, color.r,color.g,color.b ] 
         }
       })
+
+      var day = Math.floor(t*totalDays)
+      setCaption(`Day ${day}`, settings.dimensions)
 
       geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array( _.flatMap(vertices, (ele) => ele.position)), 3 ) );
       geometry.setAttribute( 'color', new THREE.BufferAttribute( new Float32Array( _.flatMap(vertices, (ele) => ele.color)), 3 ) );
