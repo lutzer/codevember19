@@ -48,8 +48,8 @@ const sketch = async ({ context, height, width }) => {
   // parse data and put them into bins depending on geo location
   const data = parseCsv(rawdata, { from_line: 2 }).map( (line) => {
     let coords = [ Number(line[2]), Number(line[3])]
-    let latBin = Math.floor(mapRange(coords[0], 90, -90, 0, params.latBins))
-    let lonBin = Math.floor(mapRange(coords[1], -180, 180, 0, params.lonBins))
+    let latBin = Math.round(mapRange(coords[0], 90, -90, 0, params.latBins))
+    let lonBin = Math.round(mapRange(coords[1], -180, 180, 0, params.lonBins))
     return {
       name: line[1],
       coords: coords,
@@ -62,7 +62,7 @@ const sketch = async ({ context, height, width }) => {
 
   // construct bin array
   const binData = data.reduce( (acc, curr) => {
-    acc[curr.bin].push(curr)
+    acc[Math.min(curr.bin, params.lonBins * params.latBins-1)].push(curr)
     return acc
   }, _.map(Array(params.lonBins * params.latBins), () => []))
 
@@ -110,12 +110,12 @@ const sketch = async ({ context, height, width }) => {
 
         let radius = Math.log(1+cases)/Math.log(maxCases) * maxDotSize
 
-        let n = mapRange(noise3D(x/2,y/2, playhead*50), -1, 1, 0.8, 1.0)
+        let n = mapRange(noise3D(x/2,y/2, playhead*10), -1, 1, 0.8, 1.0)
 
         context.fillStyle = ele.color
         context.globalAlpha = 1.0
 
-        let offset = [ noise3D(x,y,0+playhead*50) * 5, noise3D(x,y,1+playhead*10) * 5 ]
+        let offset = [ noise3D(x,y,0+playhead*5) * 5, noise3D(x,y,1+playhead*5) * 5 ]
 
         context.beginPath()
         context.arc(x + offset[0] + width/2 , y + offset[1] + height/2, radius * n, 0, 2*Math.PI);

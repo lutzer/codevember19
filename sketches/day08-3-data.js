@@ -52,8 +52,8 @@ const sketch = async ({ context, height, width }) => {
   // parse data and put them into bins depending on geo location
   const data = parseCsv(rawdata, { from_line: 2 }).map( (line) => {
     let coords = [ Number(line[2]), Number(line[3])]
-    let latBin = Math.floor(mapRange(coords[0], 90, -90, 0, params.latBins))
-    let lonBin = Math.floor(mapRange(coords[1], -180, 180, 0, params.lonBins))
+    let latBin = Math.round(mapRange(coords[0], 90, -90, 0, params.latBins))
+    let lonBin = Math.round(mapRange(coords[1], -180, 180, 0, params.lonBins))
     return {
       name: line[1],
       coords: coords,
@@ -66,7 +66,7 @@ const sketch = async ({ context, height, width }) => {
 
   // construct bin array
   const binData = data.reduce( (acc, curr) => {
-    acc[curr.bin].push(curr)
+    acc[Math.min(curr.bin, params.lonBins * params.latBins-1)].push(curr)
     return acc
   }, _.map(Array(params.lonBins * params.latBins), () => []))
 
