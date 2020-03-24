@@ -21,4 +21,15 @@ function getPixels(img, width, height) {
     return pixels
 }
 
-export { setCaption, setTitle, getPixels }
+function setCanvasPadding(padding) {
+    const canvas = document.getElementsByTagName('canvas')[0]
+    canvas.style.padding = padding
+}
+
+async function wait(ms) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
+}
+
+export { setCaption, setTitle, getPixels, wait, setCanvasPadding }

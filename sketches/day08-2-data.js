@@ -27,6 +27,7 @@ const settings = {
 }
 
 const params = {
+  timeout: 1000,
   cameraDistance : 70,
   dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
 }
@@ -45,11 +46,13 @@ const sketch = async ({ context, height, width }) => {
   // load data
   var rawdata = ""
   try {
-    rawdata = await load({ url: params.dataUrl, type: 'text' });
+    rawdata = await Promise.race([ 
+      load({ url: params.dataUrl, type: 'text' }),
+      wait(params.timeout).then( () => {throw "timeout"})
+    ]);
   } catch (err) {
     rawdata = await load({ url: 'assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
   }
-  
   // parse data
   const data = parseCsv(rawdata, { from_line: 2 }).map( (line) => {
     return {

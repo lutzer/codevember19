@@ -3,7 +3,7 @@ const load = require('load-asset');
 const parseCsv = require('csv-parse/lib/sync')
 const _ = require('lodash')
 const { lerpFrames, mapRange } = require('canvas-sketch-util/math');
-const { setCaption, setTitle, getPixels } = require('./utils')
+const { setCaption, setTitle, getPixels, wait, setCanvasPadding } = require('./utils')
 const palettes = require('nice-color-palettes');
 const random = require('canvas-sketch-util/random');
 const { noise3D }  = require('canvas-sketch-util/random');
@@ -15,6 +15,7 @@ const settings = {
 }
 
 const params = {
+  timeout: 1000,
   lonBins: 50,
   latBins: 50/2,
   dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
@@ -31,17 +32,22 @@ function easeInOutQuad(t) { return t<.5 ? 2*t*t : -1+(4-2*t)*t }
 
 const sketch = async ({ context, height, width }) => {
 
+  setCanvasPadding('10px');
+
   // load data
   var rawdata = ""
   try {
-    rawdata = await load({ url: params.dataUrl, type: 'text' });
+    rawdata = await Promise.race([ 
+      load({ url: params.dataUrl, type: 'text' }),
+      wait(params.timeout).then( () => {throw "timeout"})
+    ]);
   } catch (err) {
     rawdata = await load({ url: 'assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
   }
 
   const colors = random.shuffle(random.pick(palettes));
   const offsets = [ 1/params.lonBins/2, 1/params.latBins/2 ]
-  const texture = await load({ url: 'assets/day08/world.jpg', type: 'image'})
+  const texture = await load({ url: 'assets/day08/world_without_poles.jpg', type: 'image'})
 
   // parse data and put them into bins depending on geo location
   const data = parseCsv(rawdata, { from_line: 2 }).map( (line) => {
@@ -105,10 +111,10 @@ const sketch = async ({ context, height, width }) => {
 
     bins.forEach( (ele, index) => {
 
-      if (ele.land) {
+      let x = ((index % params.lonBins) / params.lonBins + offsets[0]) * width
+      let y = (Math.floor(index / params.lonBins) / params.latBins + offsets[1]) * height
 
-        let x = ((index % params.lonBins) / params.lonBins + offsets[0]) * width
-        let y = (Math.floor(index / params.lonBins) / params.latBins + offsets[1]) * height
+      if (ele.land) {
 
         context.fillStyle = 'black'
         context.globalAlpha = 0.3
@@ -123,9 +129,6 @@ const sketch = async ({ context, height, width }) => {
         let cases = ele.data.reduce( (acc, curr) => {
           return acc + lerpFrames(_.concat([0],curr.values,[0]), t)
         }, 0)
-
-        let x = ((index % params.lonBins) / params.lonBins + offsets[0]) * width
-        let y = (Math.floor(index / params.lonBins) / params.latBins + offsets[1]) * height
 
         let radius = Math.log(1+cases)/Math.log(maxCases) * maxDotSize
 
