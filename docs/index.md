@@ -12,5 +12,5 @@ One short graphical sketch per day. Code can be found here: [https://github.com/
 * day8 (Corona Data)
     * [day08-1-data.html](day08-1-data.html)
     * [day08-2-data.html](day08-2-data.html)
-    * [day08-2-data.html](day08-2-data.html)
+    * [day08-3-data.html](day08-3-data.html)
 

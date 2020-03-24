@@ -49,5 +49,25 @@
     {{entry}}
     <div id="title"></div>
     <div id="caption"></div>
+    <script>
+      function adjustLayout() {
+        let canvas = document.getElementsByTagName('canvas')[0]
+
+        let title = document.getElementById('title')
+        let caption = document.getElementById('caption')
+
+        caption.style.width = canvas.offsetWidth + 'px'
+        caption.style.marginTop = canvas.offsetHeight/2 + 'px'
+        title.style.marginTop = -canvas.offsetHeight/2 + 'px'
+      }
+
+      window.onresize = () => {
+        adjustLayout()
+      }
+
+      window.onload = () => {
+        adjustLayout()
+      }
+    </script>
 </body>
 </html>

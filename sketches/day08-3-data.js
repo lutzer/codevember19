@@ -3,9 +3,10 @@ const load = require('load-asset');
 const parseCsv = require('csv-parse/lib/sync')
 const _ = require('lodash')
 const { lerpFrames, mapRange } = require('canvas-sketch-util/math');
-const { setCaption, setTitle } = require('./utils')
+const { setCaption, setTitle, getPixels } = require('./utils')
 const palettes = require('nice-color-palettes');
 const random = require('canvas-sketch-util/random');
+const { noise3D }  = require('canvas-sketch-util/random');
 
 const settings = {
   dimensions: [ 768, 384 ],
@@ -14,8 +15,8 @@ const settings = {
 }
 
 const params = {
-  lonBins: 40,
-  latBins: 40/2,
+  lonBins: 50,
+  latBins: 50/2,
   dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
 }
 
@@ -39,7 +40,9 @@ const sketch = async ({ context, height, width }) => {
   }
 
   const colors = random.shuffle(random.pick(palettes));
-  
+  const offsets = [ 1/params.lonBins/2, 1/params.latBins/2 ]
+  const texture = await load({ url: 'assets/day08/world.jpg', type: 'image'})
+
   // parse data and put them into bins depending on geo location
   const data = parseCsv(rawdata, { from_line: 2 }).map( (line) => {
     let coords = [ Number(line[2]), Number(line[3])]
@@ -52,9 +55,8 @@ const sketch = async ({ context, height, width }) => {
       bin: latBin * params.lonBins + lonBin
     }
   })
-  const totalDays = data[0].values.length
 
-  // const texture = await load('assets/day08/world.jpg');
+  const totalDays = data[0].values.length
 
   // construct bin array
   const binData = data.reduce( (acc, curr) => {
@@ -62,12 +64,20 @@ const sketch = async ({ context, height, width }) => {
     return acc
   }, _.map(Array(params.lonBins * params.latBins), () => []))
 
+  // check if bin is in water or land
+  const pixels = getPixels(texture, width, height);
+  const landBins = _.range(0,binData.length).map( (index) => {
+    const bin = [ index % params.lonBins, Math.floor(index / params.lonBins)]
+    const p = [ Math.floor((bin[0] / params.lonBins + offsets[0]) * width), Math.floor((bin[1] / params.latBins + offsets[1]) * height) ] 
+    let val = pixels.data[(p[1] * width + p[0]) * 4]
+    return val < 255
+  })
   // add color to bins
-  const bins = binData.map( (d) => {
+  const bins = _.zip(binData, landBins).map( ([d,isLand]) => {
     return {
       data: d,
+      land: isLand,
       color: random.pick(colors)
-      //color : '#000000'
     }
   })
 
@@ -81,7 +91,6 @@ const sketch = async ({ context, height, width }) => {
     return Math.max(acc, _.max(caseArray))
   }, 0)
 
-  const offsets = [ width/params.lonBins/2, height/params.latBins/2 ]
   const maxDotSize = Math.min( height/params.latBins, width/ params.lonBins ) * 0.5
 
   setTitle(`Cases starting from 22nd of January`, settings.dimensions)
@@ -90,37 +99,45 @@ const sketch = async ({ context, height, width }) => {
   return ({ context, width, height, playhead }) => {
     let t = easeInOutQuad(playhead)
 
-
     context.globalAlpha = 1.0
     context.fillStyle = 'white'
     context.fillRect(0, 0, width, height)
 
-    context.globalAlpha = 0.06
-    //context.drawImage(texture, 0, 0, width, height);
-    context.globalAlpha = 1.0
-
-    context.fillStyle = "black"
-
     bins.forEach( (ele, index) => {
 
-      if (_.isEmpty(ele))
-        return
+      if (ele.land) {
 
-      let cases = ele.data.reduce( (acc, curr) => {
-        return acc + lerpFrames(_.concat([0],curr.values,[0]), t)
-      }, 0)
+        let x = ((index % params.lonBins) / params.lonBins + offsets[0]) * width
+        let y = (Math.floor(index / params.lonBins) / params.latBins + offsets[1]) * height
 
-      let x = (index % params.lonBins) / params.lonBins * width + offsets[0]
-      let y = Math.floor(index / params.lonBins) / params.latBins * height + offsets[1]
+        context.fillStyle = 'black'
+        context.globalAlpha = 0.3
+        context.beginPath()
+        context.arc(x, y, 1.0, 0, 2*Math.PI);
+        context.closePath()
+        context.fill()
 
-      let radius = Math.log(1+cases)/Math.log(maxCases) * maxDotSize
+      }
 
-      context.fillStyle = ele.color
+      if (!_.isEmpty(ele.data)) {
+        let cases = ele.data.reduce( (acc, curr) => {
+          return acc + lerpFrames(_.concat([0],curr.values,[0]), t)
+        }, 0)
 
-      context.beginPath()
-      context.arc(x, y, radius, 0, 2*Math.PI);
-      context.closePath()
-      context.fill()
+        let x = ((index % params.lonBins) / params.lonBins + offsets[0]) * width
+        let y = (Math.floor(index / params.lonBins) / params.latBins + offsets[1]) * height
+
+        let radius = Math.log(1+cases)/Math.log(maxCases) * maxDotSize
+
+        context.fillStyle = ele.color
+        context.globalAlpha = 1.0
+
+        context.beginPath()
+        context.arc(x, y, radius, 0, 2*Math.PI);
+        context.closePath()
+        context.fill()
+      }
+      
     })
 
     var day = Math.floor(t*totalDays)
