@@ -18,7 +18,8 @@ const settings = {
 const params = {
   timeout: 1000,
   cameraDistance : 50,
-  dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
+  dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv',
+  localDataUrl: 'assets/day08/time_series_covid19_confirmed_global.csv'
 }
 
 function polarToCartesian(latitude, longitude, radius = 1) {
@@ -40,7 +41,7 @@ const sketch = async ({ context, frame }) => {
       wait(params.timeout).then( () => {throw "timeout"})
     ]);
   } catch (err) {
-    rawdata = await load({ url: 'assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
+    rawdata = await load({ url: params.localDataUrl, type: 'text' });
   }
   
   // parse data

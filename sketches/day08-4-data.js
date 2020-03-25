@@ -3,7 +3,7 @@ const load = require('load-asset');
 const parseCsv = require('csv-parse/lib/sync')
 const _ = require('lodash')
 const { lerpFrames, mapRange } = require('canvas-sketch-util/math');
-const { setCaption, setTitle, getPixels, wait, setCanvasPadding } = require('./utils')
+const { setCaption, setTitle, wait } = require('./utils')
 const palettes = require('nice-color-palettes');
 const random = require('canvas-sketch-util/random');
 const { noise3D }  = require('canvas-sketch-util/random');
@@ -18,7 +18,8 @@ const params = {
   timeout: 1000,
   lonBins: 60,
   latBins: 60/2,
-  dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'
+  dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv',
+  localDataUrl: 'assets/day08/time_series_covid19_confirmed_global.csv'
 }
 
 function polarToCartesian(latitude, longitude, radius = 1) {
@@ -40,7 +41,7 @@ const sketch = async ({ context, height, width }) => {
       wait(params.timeout).then( () => {throw "timeout"})
     ]);
   } catch (err) {
-    rawdata = await load({ url: 'assets/day08/time_series_2019-ncov-Confirmed.csv', type: 'text' });
+    rawdata = await load({ url: params.localDataUrl, type: 'text' });
   }
 
   const colors = random.shuffle(random.pick(palettes));
