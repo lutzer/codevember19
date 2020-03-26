@@ -9,7 +9,7 @@
     "day3": "canvas-sketch sketches/day03-deep.js --open --hot",
     "day4": "canvas-sketch sketches/day04-big.js --open --hot",
     "day5": "canvas-sketch sketches/day05-light.js --open --hot",
-    "day6": "canvas-sketch sketches/day06-tone.js --open --hot",
+    "day6": "canvas-sketch sketches/day06/day06-tone.js --dir docs --html=sketches/day06/template.html --open --hot",
     "day7": "canvas-sketch sketches/day07-shape.js --open --hot",
     "day27": "canvas-sketch sketches/day27-moon.js --open --hot",
     "day8-1": "canvas-sketch sketches/day08-1-data.js --dir docs --html=sketches/template.html --open --hot",
@@ -37,6 +37,8 @@
     "load-asset": "^1.2.0",
     "lodash": "^4.17.15",
     "nice-color-palettes": "^3.0.0",
-    "three": "^0.114.0"
+    "three": "^0.114.0",
+    "tone": "^13.8.25",
+    "uuid": "^7.0.2"
   }
 }
