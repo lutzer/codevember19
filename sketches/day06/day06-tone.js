@@ -7,7 +7,7 @@ const Tone = require('tone')
 const { Planet } = require('./planet')
 
 const settings = {
-  dimensions: [ 1024, 1024 ],
+  dimensions: [ 512, 512 ],
   animate: true,
   seed: random.getRandomSeed(),
 }
@@ -32,12 +32,15 @@ const params = {
 
 window.addEventListener('load', () => {
   Tone.Master.mute = true
-  var button = document.getElementById('sound')
+  var caption = document.getElementById('caption')
+  var button = document.createElement('button')
+  button.innerHTML = "Sound off"
   button.addEventListener('click', () => {
     Tone.start()
     Tone.Master.mute = !Tone.Master.mute
     button.innerHTML = !Tone.Master.mute ? "Sound on" : "Sound off"
   })
+  caption.appendChild(button)
 })
 
 const sketch = async ({ context, height, width }) => {
