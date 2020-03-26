@@ -13,4 +13,5 @@ One short graphical sketch per day. Code can be found here: [https://github.com/
   * [day08-2-data.html](day08-2-data.html)
   * [day08-3-data.html](day08-3-data.html)
   * [day08-4-data.html](day08-4-data.html)
+* [day27-moon.html](day27-moon.html)
 
