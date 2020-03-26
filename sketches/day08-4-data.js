@@ -102,7 +102,7 @@ const sketch = async ({ context, height, width }) => {
       let lon = mapRange(index % params.lonBins, 0, params.lonBins, -Math.PI, +Math.PI)
       let lat = mapRange(Math.floor(index / params.lonBins), 0, params.latBins, -Math.PI/2, +Math.PI/2)
 
-      let [x,y,z] = polarToCartesian(lat,lon, height/6);
+      let [x,y,z] = polarToCartesian(lat, -lon + Math.PI, height/6);
 
       if (!_.isEmpty(ele.data)) {
         let cases = ele.data.reduce( (acc, curr) => {

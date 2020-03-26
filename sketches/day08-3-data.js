@@ -95,7 +95,7 @@ const sketch = async ({ context, height, width }) => {
   setTitle(`Cases starting from 22nd of January`, settings.dimensions)
 
   // draw each frame
-  return ({ context, width, height, playhead }) => {
+  return ({ context, width, height, playhead, time }) => {
     let t = easeInOutQuad(playhead)
 
     context.globalAlpha = 1.0
@@ -112,7 +112,7 @@ const sketch = async ({ context, height, width }) => {
       if (ele.land) {
 
         context.fillStyle = 'white'
-        context.globalAlpha = mapRange(noise3D(playhead*20, bin[0], bin[1] ), -1, 1, 0.1, 1.0)
+        context.globalAlpha = mapRange(noise3D(time, bin[0], bin[1] ), -1, 1, 0.1, 1.0)
         context.beginPath()
         context.arc(x, y, 1.0, 0, 2*Math.PI);
         context.closePath()
