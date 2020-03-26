@@ -17,7 +17,7 @@ const settings = {
 
 const params = {
   timeout: 1000,
-  cameraDistance : 50,
+  cameraDistance : 5.5,
   dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv',
   localDataUrl: 'assets/day08/time_series_covid19_confirmed_global.csv'
 }
@@ -52,6 +52,11 @@ const sketch = async ({ context, frame }) => {
       values: line.slice(4).map(Number)
     }
   })
+
+  //calculate maximum cases of sets
+  const maxCases = data.reduce( (acc, curr) => {
+    return Math.max(acc, _.max(curr.values))
+  }, 0)
 
   const totalDays = data[0].values.length
 
@@ -99,7 +104,7 @@ const sketch = async ({ context, frame }) => {
       // create vertices frm data
       const vertices = data.map( ({coords, values}, index) => { 
         let cases = lerpFrames(_.concat([0],values,[0]), t)
-        return _.concat([0,0,0], polarToCartesian(coords[0], coords[1], Math.log(1+cases)))
+        return _.concat([0,0,0], polarToCartesian(coords[0], coords[1], Math.log(1+cases)/Math.log(1+maxCases)))
       })
       geometry.setAttribute( 'position', new THREE.BufferAttribute( new Float32Array(_.flatten(vertices)), 3 ) );
 

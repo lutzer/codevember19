@@ -28,7 +28,7 @@ const settings = {
 
 const params = {
   timeout: 1000,
-  cameraDistance : 70,
+  cameraDistance : 6,
   dataUrl: 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv',
   localDataUrl: 'assets/day08/time_series_covid19_confirmed_global.csv'
 }
@@ -63,6 +63,11 @@ const sketch = async ({ context, height, width }) => {
       values: line.slice(4).map(Number)
     }
   })
+
+  //calculate maximum cases of sets
+  const maxCases = data.reduce( (acc, curr) => {
+    return Math.max(acc, _.max(curr.values))
+  }, 0)
 
   const totalDays = data[0].values.length
 
@@ -129,11 +134,11 @@ const sketch = async ({ context, height, width }) => {
       // create vertices frm data
       const vertices = data.map( ({coords, values}, index) => { 
         let cases = lerpFrames(_.concat([0],values,[0]), t)
-        let casesLog = Math.log(1 + cases)
+        let casesLog = Math.log(1 + cases) / Math.log(1 + maxCases)
         let color = new THREE.Color()
-        color.setHSL( mapRange(casesLog, 0, 7, 0.25, 0, true) , mapRange(casesLog, 0, 3, 0, 1.0, true), 0.5);
+        color.setHSL( mapRange(casesLog, 0, 0.75, 0.25, 0, true) , mapRange(casesLog, 0, 0.5, 0, 1.0, true), 0.5);
         return {
-          position: _.concat([0,0,0], polarToCartesian(coords[0], coords[1], 3 + casesLog)),
+          position: _.concat([0,0,0], polarToCartesian(coords[0], coords[1], 0.25 + casesLog)),
           color: [ 0,0,0, color.r,color.g,color.b ] 
         }
       })
