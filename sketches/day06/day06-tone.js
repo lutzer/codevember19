@@ -9,11 +9,10 @@ const { Planet, PlanetTypes } = require('./planet')
 
 const settings = {
   dimensions: [ 512, 512 ],
-  animate: true,
-  seed: random.getRandomSeed(),
+  animate: true
 }
 
-random.setSeed(settings.seed);
+random.setSeed(random.getRandomSeed());
 
 const scales = [
   [ 'C', 'E', 'A' ],
