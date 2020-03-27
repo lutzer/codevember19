@@ -1,6 +1,14 @@
 const random = require('canvas-sketch-util/random');
 const _ = require("lodash")
 
+const PlanetTypes = {
+  Note : 1,
+  Gate : 2,
+  Offset : 3
+}
+
+const PULSE_SIZE = 1.5 
+
 class Planet {
     constructor(options) {
       this.options = Object.assign({
@@ -11,14 +19,18 @@ class Planet {
         color : 'black',
         steps : 4,
         note : 'C1',
+        type: PlanetTypes.Note,
         triggerCallback : () => {}
       }, options)
-  
       
       // position in radians
       this.angle = random.range(0, 2*Math.PI)
       this.triggerDistance = 0.0
       this.pulse = 0.0
+    }
+
+    getValue() {
+      return this.angle / (Math.PI * 2)
     }
   
     getPosition() {
@@ -28,12 +40,11 @@ class Planet {
       
       const center = parent.getPosition()
       return [ center[0] + Math.cos(this.angle) * distance, center[1] + Math.sin(this.angle) * distance ]
-      
     }
   
     update(dt) {
       // update angle
-      const { distance, parent, steps } = this.options
+      const { distance, parent, steps, type, id } = this.options
 
       if (distance == 0)
         return
@@ -42,13 +53,13 @@ class Planet {
 
       // check if a step got triggered
       const newTriggerDistance = (this.angle / (Math.PI*2) * steps) % 1
-      if (newTriggerDistance < this.triggerDistance) {
+      if (newTriggerDistance < this.triggerDistance && type == PlanetTypes.Note) {
         this.options.triggerCallback(this.options)
-        this.pulse = 0.20
+        this.pulse = PULSE_SIZE
       }
 
       this.triggerDistance = newTriggerDistance
-      this.pulse = Math.max(0, this.pulse - dt)
+      this.pulse = Math.max(0, this.pulse - dt * 20)
     }
   
     draw(context) {
@@ -56,12 +67,21 @@ class Planet {
       var pos = this.getPosition();
   
       // fill circle
+      context.globalAlpha = 1.0
       context.fillStyle = color
       context.beginPath()
-      context.arc(pos[0],pos[1], (1+this.pulse) * mass, 0, 2*Math.PI);
+      context.arc(pos[0],pos[1], mass, 0, 2*Math.PI);
       context.closePath()
       context.fill()
       context.stroke()
+
+      if (this.pulse>0) {
+        context.globalAlpha = this.pulse
+        context.beginPath()
+        context.arc(pos[0],pos[1], (1+PULSE_SIZE - this.pulse) * mass, 0, 2*Math.PI);
+        context.closePath()
+        context.stroke()
+      }
     }
   
     drawLine(context) {
@@ -81,4 +101,4 @@ class Planet {
     }
   }
 
-export { Planet }
+export { Planet, PlanetTypes }

@@ -83,14 +83,8 @@ const sketch = async ({ context, height, width }) => {
 
   planets.push( new Planet({ mass: 0.05, color: random.pick(colors) }) )
   _.range(params.amount).forEach( () => {
-    planets.push( new Planet({ mass: random.range(0.01,0.05), distance: random.range(0.1,0.5), parent: _.sample(planets), color: random.pick(colors) }) )
+    planets.push( new Planet({ mass: random.range(0.01,0.05), distance: random.range(0.15,0.5), parent: _.sample(planets), color: random.pick(colors) }) )
   })
-  // planets.push( new Planet({ mass: Math.random()*0.1, distance: 0.5, parent: planets[0], color: random.pick(colors) }) )
-  // planets.push( new Planet({ mass: Math.random()*0.1, distance: 0.1, parent: planets[1], color: random.pick(colors) }) )
-  // planets.push( new Planet({ mass: Math.random()*0.1, distance: 0.3, parent: planets[0], color: random.pick(colors) }) )
-  // planets.push( new Planet({ mass: Math.random()*0.1, distance: 0.2, parent: planets[3], color: random.pick(colors) }) )
-  // planets.push( new Planet({ mass: Math.random()*0.1, distance: 0.3, parent: planets[4], color: random.pick(colors) }) )
-  // planets.push( new Planet({ mass: Math.random()*0.1, distance: 0.1, parent: planets[0], color: random.pick(colors) }) )
 
   // draw each frame
   var lastTime = 0
@@ -103,7 +97,7 @@ const sketch = async ({ context, height, width }) => {
       context.fillRect(0, 0, width, height)
 
       context.strokeStyle = 'black'
-      context.lineWidth = 1/width
+      context.lineWidth = 10/width * params.zoom
 
       context.setTransform(params.zoom*width/2, 0, 0, params.zoom*height/2, +width/2, +height/2);
       planets.forEach((planet) => planet.update(dt * params.speed) )
