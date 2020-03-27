@@ -59,14 +59,14 @@ const sketch = async ({ context, height, width }) => {
 
   const planets = []
 
-  planets.push( new Planet({ id: 'root', mass: 0.1, color: 'black' }) )
+  planets.push( new Planet({ id: 'root', mass: 0.5, color: 'black' }) )
   _.range(params.planets).forEach( (i) => {
     var parent = random.pick(planets)
     var noteIndex = random.rangeFloor(params.notes.length)
     var octave = random.pick(params.octaves)
     planets.push( new Planet({ 
       id : i,
-      mass: 0.05 + 1/octave * 0.15,
+      mass: 0.2 + 0.8/octave,
       distance: random.pick([4, 2, 1, 0.5, 0.25]), 
       parent: parent,
       color: colors[noteIndex % colors.length],
@@ -105,7 +105,7 @@ const sketch = async ({ context, height, width }) => {
       context.globalAlpha = 0.2
       planets.forEach((planet) => planet.drawLine(context))
       context.globalAlpha = 1.0
-      planets.forEach((planet) => planet.draw(context))
+      planets.forEach((planet) => planet.draw(context, 0.06/params.zoom))
   };
 };
 

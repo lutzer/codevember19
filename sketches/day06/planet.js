@@ -62,15 +62,17 @@ class Planet {
       this.pulse = Math.max(0, this.pulse - dt * 20)
     }
   
-    draw(context) {
+    draw(context, scale = 1.0) {
       const { color, mass } = this.options
       var pos = this.getPosition();
+
+      var radius = mass * scale
   
       // fill circle
       context.globalAlpha = 1.0
       context.fillStyle = color
       context.beginPath()
-      context.arc(pos[0],pos[1], mass, 0, 2*Math.PI);
+      context.arc(pos[0],pos[1], radius, 0, 2*Math.PI);
       context.closePath()
       context.fill()
       context.stroke()
@@ -78,7 +80,7 @@ class Planet {
       if (this.pulse>0) {
         context.globalAlpha = this.pulse
         context.beginPath()
-        context.arc(pos[0],pos[1], (1+PULSE_SIZE - this.pulse) * mass, 0, 2*Math.PI);
+        context.arc(pos[0],pos[1], (1+PULSE_SIZE - this.pulse) * radius, 0, 2*Math.PI);
         context.closePath()
         context.stroke()
       }
