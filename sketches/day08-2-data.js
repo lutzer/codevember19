@@ -17,7 +17,7 @@ const load = require('load-asset');
 const parseCsv = require('csv-parse/lib/sync')
 const _ = require('lodash')
 const { lerpFrames, mapRange } = require('canvas-sketch-util/math');
-const { setCaption, setTitle } = require('./utils')
+const { setCaption, setTitle, wait } = require('./utils')
 
 const settings = {
   dimensions: [ 512, 512 ],

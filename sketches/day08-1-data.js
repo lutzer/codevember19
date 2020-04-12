@@ -6,7 +6,7 @@ const load = require('load-asset');
 const parseCsv = require('csv-parse/lib/sync')
 const _ = require('lodash')
 const { lerpFrames } = require('canvas-sketch-util/math');
-const { setCaption, setTitle } = require('./utils')
+const { setCaption, setTitle, wait } = require('./utils')
 
 const settings = {
   dimensions: [ 512, 512 ],
@@ -41,6 +41,7 @@ const sketch = async ({ context, frame }) => {
       wait(params.timeout).then( () => {throw "timeout"})
     ]);
   } catch (err) {
+    console.log(err)
     rawdata = await load({ url: params.localDataUrl, type: 'text' });
   }
   
