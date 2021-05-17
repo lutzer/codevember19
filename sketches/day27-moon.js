@@ -11,7 +11,7 @@ const settings = {
 const params = {
   speed : 0.5,
   zoom : 0.4,
-  amount: random.range(100, 500)
+  amount: random.range(30, 150)
 }
 
 class Planet {
@@ -55,7 +55,7 @@ class Planet {
     context.arc(pos[0],pos[1], mass, 0, 2*Math.PI/steps);
     context.closePath()
     context.fill()
-    context.stroke()
+    // context.stroke()
   }
 
   drawLine(context) {
@@ -83,7 +83,7 @@ const sketch = async ({ context, height, width }) => {
 
   planets.push( new Planet({ mass: 0.05, color: random.pick(colors) }) )
   _.range(params.amount).forEach( () => {
-    planets.push( new Planet({ mass: random.range(0.01,0.05), distance: random.range(0.15,0.5), parent: _.sample(planets), color: random.pick(colors) }) )
+    planets.push( new Planet({ mass: random.range(0.01,0.05), distance: random.range(0.2,1.0), parent: _.sample(planets), color: random.pick(colors) }) )
   })
 
   // draw each frame
@@ -92,7 +92,7 @@ const sketch = async ({ context, height, width }) => {
       const dt = time - lastTime
       lastTime = time
 
-      context.globalAlpha = 1.0
+      context.globalAlpha = 0.005
       context.fillStyle = 'white'
       context.fillRect(0, 0, width, height)
 
