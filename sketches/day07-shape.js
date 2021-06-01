@@ -12,7 +12,7 @@ const settings = {
 }
 
 const params = {
-  circleSize : settings.dimensions[0] / 1.6,
+  circleSize : settings.dimensions[0] / 3,
   numberOfLines: random.rangeFloor(50, 250),
   noiseFreq: random.range(2,6)
 }
@@ -52,7 +52,7 @@ const sketch = () => {
   return ({ context, width, height, time, frame }) => {
 
     context.fillStyle = 'white'
-    context.globalAlpha = 0.05
+    context.globalAlpha = 0.08
     context.fillRect(0, 0, width, height)
 
     const vertices = createVertices(params.numberOfLines, time / 8)
@@ -90,7 +90,6 @@ const sketch = () => {
     })
     context.closePath()
     context.stroke()
-    // context.fill()
   };
 };
 
