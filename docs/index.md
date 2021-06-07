@@ -9,7 +9,7 @@ One short graphical sketch per day. Code can be found here: [https://github.com/
 * [day05-light.html](day05-light.html)
 * [day06-tone.html](day06-tone.html)
 * [day07-shape.html](day07-shape.html)
-  * [day07-shape.html](day07-shape-fullscreen.html)
+  * [day07-shape-fullscreen.html](day07-shape-fullscreen.html)
 * day08-data
   * [day08-1-data.html](day08-1-data.html)
   * [day08-2-data.html](day08-2-data.html)
