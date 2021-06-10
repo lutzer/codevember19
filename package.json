@@ -12,6 +12,7 @@
     "day6": "canvas-sketch sketches/day06/day06-tone.js --dir docs --html=sketches/template.html --open --hot",
     "day7": "canvas-sketch sketches/day07-shape.js --open --hot",
     "day7-fs": "canvas-sketch sketches/day07-shape-fullscreen.js --open --hot",
+    "day7-loop": "canvas-sketch sketches/day07-shape-loop.js --open --hot",
     "day27": "canvas-sketch sketches/day27-moon.js --dir docs --html=sketches/template.html --open --hot",
     "day8-1": "canvas-sketch sketches/day08-1-data.js --dir docs --html=sketches/template.html --open --hot",
     "day8-2": "canvas-sketch sketches/day08-2-data.js --dir docs --html=sketches/template.html --open --hot",
