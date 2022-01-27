@@ -40,7 +40,7 @@
     "load-asset": "^1.2.0",
     "lodash": "^4.17.15",
     "nice-color-palettes": "^3.0.0",
-    "three": "^0.114.0",
+    "three": "^0.137.0",
     "tone": "^13.8.25",
     "uuid": "^7.0.2"
   }
