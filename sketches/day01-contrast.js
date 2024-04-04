@@ -3,6 +3,8 @@ const  { lerp } = require('canvas-sketch-util/math')
 const { noise3D, noise2D, noise1D }  = require('canvas-sketch-util/random');
 const _ = require('lodash')
 
+
+
 const settings = {
   dimensions: [ 512, 512 ],
   animate: true,
@@ -11,6 +13,9 @@ const settings = {
 
 const sketch = () => {
   const margin = - 20
+
+  const args = canvasSketch.cli.arguments;
+console.log(args)
 
   const createDivisions = (number, time) => Array(number).fill(0).map( (val, index) => {
 
@@ -23,6 +28,7 @@ const sketch = () => {
   })
 
   return ({ context, width, height, time }) => {
+
     context.fillStyle = 'white'
     context.fillRect(0, 0, width, height)
 

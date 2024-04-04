@@ -4,7 +4,7 @@ const random = require('canvas-sketch-util/random');
 const _ = require('lodash')
 
 const settings = {
-  dimensions: [ 1024, 1024 ],
+  dimensions: [ 512, 512 ],
   animate: true
 }
 
@@ -19,7 +19,8 @@ class Planet {
     this.options = Object.assign({
       mass : 0.1, 
       distance : 0, 
-      steps : 1, 
+      steps : 1,
+      speed: 1,
       parent : null, 
       color : 'black',
       steps : 1
@@ -41,8 +42,8 @@ class Planet {
   }
 
   update(dt) {
-    const { distance, mass } = this.options
-    this.angle = (this.angle + dt * 1/distance) % (Math.PI*2)
+    const { distance, mass, speed } = this.options
+    this.angle = (this.angle + dt * speed * 1/distance) % (Math.PI*2)
   }
 
   draw(context) {
@@ -83,7 +84,7 @@ const sketch = async ({ context, height, width }) => {
 
   planets.push( new Planet({ mass: 0.05, color: random.pick(colors) }) )
   _.range(params.amount).forEach( () => {
-    planets.push( new Planet({ mass: random.range(0.01,0.05), distance: random.range(0.2,1.0), parent: _.sample(planets), color: random.pick(colors) }) )
+    planets.push( new Planet({ mass: random.range(0.01,0.05), speed: random.range(0.5,1.5), distance: random.range(0.2,1.0), parent: _.sample(planets), color: random.pick(colors) }) )
   })
 
   // draw each frame
@@ -92,7 +93,7 @@ const sketch = async ({ context, height, width }) => {
       const dt = time - lastTime
       lastTime = time
 
-      context.globalAlpha = 0.005
+      context.globalAlpha = 0.05
       context.fillStyle = 'white'
       context.fillRect(0, 0, width, height)
 
