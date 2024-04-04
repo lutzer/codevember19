@@ -84,7 +84,7 @@ const sketch = async ({ context, height, width }) => {
 
   planets.push( new Planet({ mass: 0.05, color: random.pick(colors) }) )
   _.range(params.amount).forEach( () => {
-    planets.push( new Planet({ mass: random.range(0.01,0.05), speed: random.range(0.5,1.5), distance: random.range(0.2,1.0), parent: _.sample(planets), color: random.pick(colors) }) )
+    planets.push( new Planet({ mass: random.range(0.01,0.05), speed: random.range(-1,1), distance: random.range(0.2,1.0), parent: _.sample(planets), color: random.pick(colors) }) )
   })
 
   // draw each frame
@@ -102,7 +102,7 @@ const sketch = async ({ context, height, width }) => {
 
       context.setTransform(params.zoom*width/2, 0, 0, params.zoom*height/2, +width/2, +height/2);
       planets.forEach((planet) => planet.update(dt * params.speed) )
-      context.globalAlpha = 0.2
+      context.globalAlpha = 0.05
       planets.forEach((planet) => planet.drawLine(context))
       context.globalAlpha = 1.0
       planets.forEach((planet) => planet.draw(context))
