@@ -191,6 +191,8 @@ function getBrightnessFromBuffer(pixelBuffer) {
 // Your sketch, which simply returns the shader
 const sketch = ({ context, width, height }) => {
 
+  const timeOffset = Math.random()*1000;
+
   // Create a renderer
   const renderer = new THREE.WebGLRenderer({
     canvas: context.canvas
@@ -224,7 +226,7 @@ const sketch = ({ context, width, height }) => {
 
   // add particles
   const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(0.13,64,64),
+    new THREE.SphereGeometry(0.15,64,64),
     new THREE.ShaderMaterial(meshShader)
   );
   mesh.position.set(0,0,0.2)
@@ -248,6 +250,9 @@ const sketch = ({ context, width, height }) => {
       camera.updateProjectionMatrix();
     },
     render ({time}) {
+
+      time += timeOffset;
+
       setShaderUniforms(lightBackground.material, { time: time })
       
 
