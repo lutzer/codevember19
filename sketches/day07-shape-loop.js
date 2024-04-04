@@ -6,7 +6,7 @@ const interpolate = require('color-interpolate');
 const _ = require('lodash')
 
 const settings = {
-  dimensions: [ 512, 512 ],
+  dimensions: [ 1024, 1024 ],
   animate: true,
   fps: 30,
 }
@@ -17,9 +17,6 @@ const params = {
   shapeOctave: random.range(0.5,3),
   loopDuration: 5
 }
-
-console.log(params)
-
 
 function wrappableNoise2D(x, y, octaveX = 1, octaveY = 1) {
   // console.log(y)
@@ -49,7 +46,6 @@ const sketch = () => {
        length: length
     }
   })
-
 
   var pairs = []
 

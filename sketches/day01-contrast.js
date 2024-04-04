@@ -14,9 +14,6 @@ const settings = {
 const sketch = () => {
   const margin = - 20
 
-  const args = canvasSketch.cli.arguments;
-console.log(args)
-
   const createDivisions = (number, time) => Array(number).fill(0).map( (val, index) => {
 
     return { 
