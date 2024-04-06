@@ -22,5 +22,5 @@ One sketch per day in dark november. Sketches can be found here: [https://lutzer
 
 * install ffmpeg with `brew install ffmpeg`
 * ouput gif with `canvas-sketch {sketch_name.js}  --output=docs --stream=gif`
-* build inline html with `canvas-sketch {sketch_name.js}  --dir docs --build --inline`
+* build inline html with `canvas-sketch {sketch_name.js}  --html=sketches/template.html --dir docs --build --inline`
 
